@@ -1,0 +1,26 @@
+- name: copy configuration files
+  copy: src=gridrouter dest={{ workspace }}
+
+- shell: "ls -d {{ ansible_env.PWD }}/../proxy/target/*.war"
+  register: war_path
+
+- file: path={{ war_path.stdout }} state=file
+- file: path={{ workspace }}/gridrouter/war/ state=directory
+- copy: src={{ war_path.stdout }} dest={{ workspace }}/gridrouter/war/ROOT.war
+
+- name: start jetty with gridrouter
+  docker:
+    name: gridrouter
+    image: jetty:9.3.2
+    expose:
+      - "8080"
+    ports:
+      - "8080"
+    links:
+      - "chrome"
+      - "firefox"
+    volumes:
+      - "{{ workspace }}/gridrouter/webapps:/var/lib/jetty/webapps"
+      - "{{ workspace }}/gridrouter/conf:/etc/gridrouter/conf"
+      - "{{ workspace }}/gridrouter/war:/etc/gridrouter/war"
+    state: started

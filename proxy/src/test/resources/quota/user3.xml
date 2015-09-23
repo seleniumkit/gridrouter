@@ -1,0 +1,13 @@
+<qa:browsers xmlns:qa="urn:config.gridrouter.qatools.ru">
+    <browser name="firefox" defaultVersion="32.0">
+        <version number="32.0">
+            <region name="first">
+                <host name="localhost" port="8081" count="1"/>
+                <host name="localhost" port="8082" count="2"/>
+            </region>
+            <region name="second">
+                <host name="localhost" port="8083" count="5"/>
+            </region>
+        </version>
+    </browser>
+</qa:browsers>

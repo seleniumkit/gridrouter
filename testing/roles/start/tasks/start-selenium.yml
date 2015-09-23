@@ -1,0 +1,7 @@
+- name: start selenium standalone with {{ browser }}
+  docker:
+    name: "{{ browser }}"
+    image: selenium/standalone-{{ browser }}:{{ version }}
+    expose:
+      - "4444"
+    state: started

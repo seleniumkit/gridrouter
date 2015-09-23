@@ -1,0 +1,12 @@
+# IDEA files
+.idea
+*.iml
+
+# Maven files
+target
+
+# Docker compose files
+compose/war
+
+# Npm modules
+node_modules

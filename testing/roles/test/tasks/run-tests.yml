@@ -1,0 +1,35 @@
+- name: "{{ language }} gathering facts"
+  set_fact:
+    name: "{{ language }}_tests"
+    project: "{{ workspace }}/{{ language }}"
+
+- name: "{{ language }} | copy project files"
+  copy: src={{ language }} dest={{ workspace }}
+
+- name: "{{ language }} | grant script execution privileges"
+  file: path={{ workspace }}/{{ language }}/run.sh mode=u+x
+
+- name: "{{ language }} | start container"
+  docker:
+    name: "{{ name}}"
+    image: "{{ image }}"
+    command: /code/run.sh
+    links:
+      - "gridrouter"
+    volumes:
+      - "{{ project }}:/code"
+      - "{{ workspace }}/report:/code/target/surefire-reports"
+    state: started
+
+- name: "{{ language }} | wait until tests complete"
+  command: "docker wait {{ name }}"
+  register: tests_result
+
+- name: "{{ language }} | delete container"
+  docker:
+    name: "{{ name}}"
+    image: "{{ image }}"
+    state: absent
+
+- name: "{{ language }} | delete project"
+  file: path={{ project }} state=absent

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_1.xsd"
+        xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
+        jaxb:extensionBindingPrefixes="xjc annox"
+        schemaLocation="config.xsd"
+        version="2.1">
+
+    <jaxb:bindings node="//xs:complexType[@name='Browsers']">
+        <inheritance:implements>ru.qatools.gridrouter.config.WithBrowserVersionFind</inheritance:implements>
+        <inheritance:implements>ru.qatools.gridrouter.config.WithXmlView</inheritance:implements>
+        <inheritance:implements>ru.qatools.gridrouter.config.WithRoutesMap</inheritance:implements>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xs:complexType[@name='Browser']">
+        <inheritance:implements>ru.qatools.gridrouter.config.WithVersionFind</inheritance:implements>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xs:complexType[@name='Version']">
+        <inheritance:implements>ru.qatools.gridrouter.config.VersionWithCount</inheritance:implements>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xs:complexType[@name='Region']">
+        <inheritance:implements>ru.qatools.gridrouter.config.WithCopy</inheritance:implements>
+        <inheritance:implements>ru.qatools.gridrouter.config.RegionWithCount</inheritance:implements>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xs:complexType[@name='Host']">
+        <inheritance:implements>ru.qatools.gridrouter.config.WithRoute</inheritance:implements>
+        <inheritance:implements>ru.qatools.gridrouter.config.WithCount</inheritance:implements>
+    </jaxb:bindings>
+
+    <jaxb:globalBindings>
+        <jaxb:serializable/>
+        <xjc:simple/>
+    </jaxb:globalBindings>
+
+</jaxb:bindings>

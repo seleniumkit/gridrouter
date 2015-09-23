@@ -1,0 +1,1 @@
+workspace: "{{ ansible_env.PWD }}/target"

@@ -1,0 +1,3 @@
+{
+	"baseUrl": "http://selenium:selenium@gridrouter:8080/wd/hub"
+}

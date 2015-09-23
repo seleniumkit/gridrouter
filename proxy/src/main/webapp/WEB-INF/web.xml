@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+        metadata-complete="false"
+        version="3.0">
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:META-INF/spring/*application-context.xml</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>default</servlet-name>
+        <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+        <init-param>
+            <param-name>dirAllowed</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </servlet>
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>Selenium Grid Router</realm-name>
+    </login-config>
+
+</web-app>

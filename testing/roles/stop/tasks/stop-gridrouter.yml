@@ -1,0 +1,8 @@
+- name: stop jetty with gridrouter
+  docker:
+    name: gridrouter
+    image: jetty:9.3.0-jre8
+    state: absent
+
+- name: delete workspace
+  file: path={{ workspace }} state=absent

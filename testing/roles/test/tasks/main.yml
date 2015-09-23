@@ -1,0 +1,5 @@
+---
+  - include: before.yml
+  - include: run-tests.yml language="python" image="python:2.7"
+  - include: run-tests.yml language="java" image="maven:3.3-jdk-8"
+  - include: after.yml

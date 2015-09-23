@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:json="urn:json.gridrouter.qatools.ru"
+            targetNamespace="urn:json.gridrouter.qatools.ru">
+
+    <xsd:element name="gridStats" type="json:GridStats"/>
+    <xsd:complexType name="GridStats">
+        <xsd:attribute name="openSessions" type="xsd:int" use="required"/>
+    </xsd:complexType>
+</xsd:schema>

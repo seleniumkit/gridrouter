@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_1.xsd"
+        xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
+        jaxb:extensionBindingPrefixes="xjc annox"
+        schemaLocation="json.xsd"
+        version="2.1">
+
+    <jaxb:bindings node="//xs:complexType[starts-with(@name, 'Json')]" multiple="true">
+        <inheritance:extends>ru.qatools.gridrouter.json.JsonWithAnyProperties</inheritance:extends>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xs:complexType[@name='JsonMessage']">
+        <inheritance:implements>ru.qatools.gridrouter.json.WithJsonView</inheritance:implements>
+        <inheritance:implements>ru.qatools.gridrouter.json.WithErrorMessage</inheritance:implements>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xs:complexType[@name='JsonCapabilities']">
+        <inheritance:implements>ru.qatools.gridrouter.json.Describable</inheritance:implements>
+    </jaxb:bindings>
+
+    <jaxb:globalBindings>
+        <jaxb:serializable/>
+        <xjc:simple/>
+    </jaxb:globalBindings>
+
+</jaxb:bindings>

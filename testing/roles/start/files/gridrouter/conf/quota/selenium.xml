@@ -1,0 +1,16 @@
+<browsers>
+    <browser name="firefox" defaultVersion="38.0">
+        <version number="38.0">
+            <region name="first">
+                <host name="firefox" port="4444" count="5"/>
+            </region>
+        </version>
+    </browser>
+    <browser name="chrome" defaultVersion="43.0">
+        <version number="43.0">
+            <region name="first">
+                <host name="chrome" port="4444" count="5"/>
+            </region>
+        </version>
+    </browser>
+</browsers>

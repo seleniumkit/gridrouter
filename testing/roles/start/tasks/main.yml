@@ -1,0 +1,6 @@
+---
+  - include: before.yml
+  - include: start-selenium.yml version="2.46.0" browser="firefox"
+  - include: start-selenium.yml version="2.46.0" browser="chrome"
+  - include: start-gridrouter.yml
+

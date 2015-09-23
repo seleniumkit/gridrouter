@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:json="urn:json.gridrouter.qatools.ru"
+            targetNamespace="urn:json.gridrouter.qatools.ru">
+
+    <xsd:element name="jsonMessage" type="json:JsonMessage"/>
+    <xsd:complexType name="JsonMessage">
+        <xsd:sequence>
+            <xsd:element name="desiredCapabilities" type="json:JsonCapabilities"/>
+        </xsd:sequence>
+        <xsd:attribute name="status" type="xsd:int"/>
+        <xsd:attribute name="sessionId" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="JsonCapabilities">
+        <xsd:attribute name="browserName" type="xsd:string"/>
+        <xsd:attribute name="version" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="JsonValue">
+        <xsd:attribute name="message" type="xsd:string"/>
+    </xsd:complexType>
+</xsd:schema>
