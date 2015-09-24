@@ -97,7 +97,7 @@ When you request a browser by specifying its name and version **Grid Router** do
 1. Searches for the browser in user quota XML and returns error if not found
 2. Randomly selects a host from all hosts and tries to obtain browser on that host. Our algorithm also considers browser counts specified in XML for each host so that hosts with more browsers get more connections.
 3. If browser was obtained - returns it to the user and proxies all requests in this session to the same host
-4. In not - selects a new host **from another region** and tries again. This guarantees that when one datacenter goes down in most of cases we'll obtain browser at worst after the second attempt.
+4. If not - selects a new host **from another region** and tries again. This guarantees that when one datacenter goes down in most of cases we'll obtain browser at worst after the second attempt.
 5. After trying all hosts returns error if no browser was obtained
 
 ### Hub configuration recommendations
