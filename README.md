@@ -32,7 +32,7 @@ Then install Gridrouter itself:
 # apt-get install yandex-grid-router
 # service yandex-grid-router start
 ```
-Configuration files are located in `/etc/grid-router/` directory, log files reside in `/var/log/grid-router/`, binaries are installed to `/usr/share/grid-router`.
+Configuration files are located in `/etc/grid-router/` directory, XML quota files - by default in `/etc/grid-router/quota/`, log files reside in `/var/log/grid-router/`, binaries are installed to `/usr/share/grid-router`.
 
 ## Configuration
 Two types of configuration files exist:
