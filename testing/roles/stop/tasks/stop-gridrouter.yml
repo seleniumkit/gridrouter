@@ -6,3 +6,4 @@
 
 - name: delete workspace
   file: path={{ workspace }} state=absent
+  ignore_errors: yes

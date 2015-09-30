@@ -33,3 +33,4 @@
 
 - name: "{{ language }} | delete project"
   file: path={{ project }} state=absent
+  ignore_errors: yes
