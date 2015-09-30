@@ -51,9 +51,9 @@ e2eTestsJob.with {
                 buildNumber('${WAR_BUILD_NUMBER}')
             }
         }
-        shell('ansible-playbook --sudo -e "workspace=/tmp/e2e/${JOB_NAME}/${BUILD_NUMBER}" testing/start.yml')
-        shell('ansible-playbook --sudo -e "workspace=/tmp/e2e/${JOB_NAME}/${BUILD_NUMBER}" testing/test.yml')
-        shell('ansible-playbook --sudo -e "workspace=/tmp/e2e/${JOB_NAME}/${BUILD_NUMBER}" testing/stop.yml')
+        shell('ansible-playbook -e "workspace=/tmp/e2e/${JOB_NAME}/${BUILD_NUMBER}" testing/start.yml')
+        shell('ansible-playbook -e "workspace=/tmp/e2e/${JOB_NAME}/${BUILD_NUMBER}" testing/test.yml')
+        shell('ansible-playbook -e "workspace=/tmp/e2e/${JOB_NAME}/${BUILD_NUMBER}" testing/stop.yml')
     }
 
     publishers {
