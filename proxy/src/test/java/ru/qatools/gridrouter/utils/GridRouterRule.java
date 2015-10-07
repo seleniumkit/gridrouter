@@ -19,6 +19,7 @@ public class GridRouterRule extends JettyRule {
     public static final String USER_1 = "user1";
     public static final String USER_2 = "user2";
     public static final String USER_3 = "user3";
+    public static final String USER_4 = "user4";
     public static final String PASSWORD = "password";
     public static final String ROLE = "user";
 
@@ -40,6 +41,7 @@ public class GridRouterRule extends JettyRule {
                     putUser(USER_1, new Password(PASSWORD), new String[]{ROLE});
                     putUser(USER_2, new Password(PASSWORD), new String[]{ROLE});
                     putUser(USER_3, new Password(PASSWORD), new String[]{ROLE});
+                    putUser(USER_4, new Password(PASSWORD), new String[]{ROLE});
                 }}
         );
     }
