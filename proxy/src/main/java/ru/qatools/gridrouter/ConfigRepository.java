@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import ru.qatools.beanloader.BeanChangeListener;
+import ru.qatools.beanloader.BeanLoader;
 import ru.qatools.beanloader.BeanWatcher;
 import ru.qatools.gridrouter.config.Browser;
 import ru.qatools.gridrouter.config.Browsers;
@@ -13,15 +14,11 @@ import ru.qatools.gridrouter.config.Version;
 import ru.qatools.gridrouter.json.JsonCapabilities;
 
 import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.nio.file.Files.newDirectoryStream;
 
 /**
  * @author Alexander Andyashin aandryashin@yandex-team.ru
@@ -46,26 +43,17 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
     private Map<String, String> routes = new HashMap<>();
 
     @PostConstruct
-    public void init() throws JAXBException, IOException {
-        if (quotaHotReload) {
-            startQuotaWatcher();
-        } else {
-            loadQuotaOnce();
-        }
-    }
-
-    private void startQuotaWatcher() {
-        LOGGER.debug("Starting quota watcher");
+    public void init() {
         try {
-            BeanWatcher.watchFor(Browsers.class, quotaDirectory.getPath(), XML_GLOB, this);
+            if (quotaHotReload) {
+                LOGGER.debug("Starting quota watcher");
+                BeanWatcher.watchFor(Browsers.class, quotaDirectory.toPath(), XML_GLOB, this);
+            } else {
+                LOGGER.debug("Loading quota configuration");
+                BeanLoader.loadAll(Browsers.class, quotaDirectory.toPath(), XML_GLOB, this);
+            }
         } catch (IOException e) {
-            LOGGER.error("Quota configuration loading failed: \n\n{}", e);
-        }
-    }
-
-    private void loadQuotaOnce() throws IOException {
-        for (Path filename : newDirectoryStream(quotaDirectory.toPath(), XML_GLOB)) {
-            beanChanged(filename, JAXB.unmarshal(filename.toFile(), Browsers.class));
+            LOGGER.error("Quota configuration loading failed", e);
         }
     }
 
