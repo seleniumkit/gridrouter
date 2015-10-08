@@ -25,6 +25,7 @@ public class ProxyServletWithTwoHubsTest extends ProxyServletTest {
         hub1.emulate().newSessions(1);
         hub2.emulate().newSessions(1);
     }
+
     public ProxyServletWithTwoHubsTest() throws Exception {
         super(USER_2);
     }
