@@ -47,24 +47,24 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
 
     @PostConstruct
     public void init() throws JAXBException, IOException {
-        if (isQuotaHotReload()) {
+        if (quotaHotReload) {
             startQuotaWatcher();
         } else {
-            loadQuotaOnce(getQuotaPath());
+            loadQuotaOnce();
         }
     }
 
     private void startQuotaWatcher() {
         LOGGER.debug("Starting quota watcher");
         try {
-            BeanWatcher.watchFor(Browsers.class, getQuotaPath().toString(), XML_GLOB, this);
+            BeanWatcher.watchFor(Browsers.class, quotaDirectory.getPath(), XML_GLOB, this);
         } catch (IOException e) {
             LOGGER.error("Quota configuration loading failed: \n\n{}", e);
         }
     }
 
-    private void loadQuotaOnce(Path quotaPath) throws IOException {
-        for (Path filename : newDirectoryStream(quotaPath, XML_GLOB)) {
+    private void loadQuotaOnce() throws IOException {
+        for (Path filename : newDirectoryStream(quotaDirectory.toPath(), XML_GLOB)) {
             beanChanged(filename, JAXB.unmarshal(filename.toFile(), Browsers.class));
         }
     }
@@ -76,7 +76,7 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
                     + "It is not purged from the running gridrouter process though.", filename);
         } else {
             LOGGER.info("Loading quota configuration file [{}]", filename);
-            String user = getFileName(filename);
+            String user = FilenameUtils.getBaseName(filename.toString());
             userBrowsers.put(user, browsers);
             routes.putAll(browsers.getRoutesMap());
             LOGGER.info("Loaded quota configuration for [{}] from [{}]: \n\n{}",
@@ -84,37 +84,17 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
         }
     }
 
-    protected boolean isQuotaHotReload() {
-        return quotaHotReload;
-    }
-
-    protected Path getQuotaPath() {
-        return quotaDirectory.toPath();
-    }
-
     public Map<String, String> getRoutes() {
         return routes;
-    }
-
-    public Map<String, Browsers> getUserBrowsers() {
-        return this.userBrowsers;
-    }
-
-    protected Browsers getUserBrowsers(String user) {
-        return getUserBrowsers().get(user);
     }
 
     public Version findVersion(String user, JsonCapabilities caps) {
         return userBrowsers.get(user).find(caps.getBrowserName(), caps.getVersion());
     }
 
-    private static String getFileName(Path path) {
-        return FilenameUtils.getBaseName(path.toString());
-    }
-
     public Map<String, Integer> getBrowsersCountMap(String user) {
         HashMap<String, Integer> countMap = new HashMap<>();
-        for (Browser browser : getUserBrowsers(user).getBrowsers()) {
+        for (Browser browser : this.userBrowsers.get(user).getBrowsers()) {
             for (Version version : browser.getVersions()) {
                 countMap.put(browser.getName() + ":" + version.getNumber(), version.getCount());
             }
