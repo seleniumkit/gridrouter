@@ -21,4 +21,8 @@
     <xsd:complexType name="JsonValue">
         <xsd:attribute name="message" type="xsd:string"/>
     </xsd:complexType>
+
+    <xsd:complexType name="Proxy">
+        <xsd:attribute name="proxyType" type="xsd:string"/>
+    </xsd:complexType>
 </xsd:schema>
