@@ -15,8 +15,8 @@ import static org.openqa.selenium.remote.BrowserType.IE;
 import static org.openqa.selenium.remote.CapabilityType.PROXY;
 import static org.openqa.selenium.remote.DesiredCapabilities.firefox;
 import static org.openqa.selenium.remote.DesiredCapabilities.internetExplorer;
-import static ru.qatools.gridrouter.utils.jsonUtils.buildJsonCapabilities;
-import static ru.qatools.gridrouter.utils.jsonUtils.buildJsonMessage;
+import static ru.qatools.gridrouter.utils.JsonUtils1.buildJsonCapabilities;
+import static ru.qatools.gridrouter.utils.JsonUtils1.buildJsonMessage;
 
 /**
  * @author Innokenty Shuvalov innokenty@yandex-team.ru

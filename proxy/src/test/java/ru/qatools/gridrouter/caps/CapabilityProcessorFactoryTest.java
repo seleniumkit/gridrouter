@@ -10,7 +10,7 @@ import ru.qatools.gridrouter.json.JsonCapabilities;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.openqa.selenium.remote.DesiredCapabilities.firefox;
 import static org.openqa.selenium.remote.DesiredCapabilities.internetExplorer;
-import static ru.qatools.gridrouter.utils.jsonUtils.buildJsonCapabilities;
+import static ru.qatools.gridrouter.utils.JsonUtils1.buildJsonCapabilities;
 import static org.hamcrest.Matchers.*;
 
 /**
