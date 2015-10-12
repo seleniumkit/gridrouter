@@ -16,7 +16,7 @@ import static org.openqa.selenium.remote.CapabilityType.VERSION;
 /**
  * @author Innokenty Shuvalov innokenty@yandex-team.ru
  */
-public class JsonUtils1 {
+public class JsonUtils {
 
     public static JsonCapabilities buildJsonCapabilities(DesiredCapabilities capabilities)
             throws IOException {
