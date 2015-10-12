@@ -12,6 +12,7 @@ import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.qatools.gridrouter.caps.CapabilityProcessorFactory;
 import ru.qatools.gridrouter.config.Host;
 import ru.qatools.gridrouter.config.HostSelectionStrategy;
 import ru.qatools.gridrouter.config.Region;
@@ -65,6 +66,9 @@ public class RouteServlet extends HttpServlet {
     @Autowired
     private GridStats stats;
 
+    @Autowired
+    private CapabilityProcessorFactory capabilityProcessorFactory;
+
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -91,6 +95,8 @@ public class RouteServlet extends HttpServlet {
         }
 
         caps.setVersion(actualVersion.getNumber());
+
+        capabilityProcessorFactory.getProcessor(caps).process(caps);
 
         List<Region> actualRegions = actualVersion.getRegions()
                 .stream().map(Region::copy).collect(toList());
