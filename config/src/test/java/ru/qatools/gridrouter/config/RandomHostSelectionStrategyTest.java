@@ -27,7 +27,7 @@ public class RandomHostSelectionStrategyTest {
         int entriesCount = 5000000;
         int keysCount = 10;
 
-        Host host1 = newHost("host_1", keysCount - 1);
+        Host host1 = new Host("host_1", 4444, keysCount - 1);
 
         List<Host> hosts = new ArrayList<>(keysCount);
         hosts.add(host1);
@@ -54,14 +54,7 @@ public class RandomHostSelectionStrategyTest {
     }
 
     private static Host newHost() {
-        return newHost(UUID.randomUUID().toString(), 1);
-    }
-
-    private static Host newHost(String name, int count) {
-        Host host = new Host();
-        host.setName(name);
-        host.setCount(count);
-        return host;
+        return new Host(UUID.randomUUID().toString(), 4444, 1);
     }
 
     private static Matcher<Integer> isAround(int count) {
