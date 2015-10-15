@@ -65,11 +65,14 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
         } else {
             LOGGER.info("Loading quota configuration file [{}]", filename);
             String user = FilenameUtils.getBaseName(filename.toString());
-            userBrowsers.put(user, browsers);
-            routes.putAll(browsers.getRoutesMap());
-            LOGGER.info("Loaded quota configuration for [{}] from [{}]: \n\n{}",
-                    user, filename, browsers.toXml());
+            updateQuota(user, browsers);
         }
+    }
+
+    public void updateQuota(String user, Browsers browsers) {
+        userBrowsers.put(user, browsers);
+        routes.putAll(browsers.getRoutesMap());
+        LOGGER.info("Loaded quota configuration for [{}]: \n\n{}", user, browsers.toXml());
     }
 
     public Map<String, String> getRoutes() {
