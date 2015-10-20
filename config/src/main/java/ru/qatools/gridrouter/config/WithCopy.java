@@ -1,5 +1,6 @@
 package ru.qatools.gridrouter.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,6 +11,8 @@ public interface WithCopy {
 
     List<Host> getHosts();
 
+    String getName();
+
     /**
      * Creates a copy for the {@link Region} object, which is almost deep:
      * the hosts itself are not copied although the list is new.
@@ -17,8 +20,6 @@ public interface WithCopy {
      * @return a copy of the object
      */
     default Region copy() {
-        Region result = new Region();
-        result.getHosts().addAll(getHosts());
-        return result;
+        return new Region(new ArrayList<>(getHosts()), getName());
     }
 }
