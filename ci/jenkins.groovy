@@ -4,6 +4,7 @@ def repo = 'seleniumkit/gridrouter'
 def buildWarJob = mavenJob("${project}_build-war")
 def e2eTestsJob = job("${project}_e2e-tests")
 def sonarJob = mavenJob("${project}_sonar")
+def sonarIncrJob = mavenJob("${project}_sonar-incr")
 def deployJob = mavenJob("${project}_deploy")
 
 def pullRequestJob = multiJob("${project}_pull-reqest_flow")
@@ -76,7 +77,34 @@ sonarJob.with {
     }
 
     publishers {
-        sonar ()
+        sonar()
+    }
+}
+
+sonarIncrJob.with {
+
+    label('maven')
+    scm {
+        git {
+            remote {
+                github(repo, 'https', 'github.com')
+                refspec('${GIT_REFSPEC}')
+            }
+            branch('${GIT_COMMIT}')
+            localBranch('master')
+        }
+    }
+
+    configure {
+        it / 'publishers' / 'hudson.plugins.sonar.SonarPublisher' {
+            jdk('(Inherit From Job)')
+            branch()
+            language()
+            jobAdditionalProperties('-Dsonar.analysis.mode=incremental -Dsonar.github.pullRequest=${ghprbPullId} -Dsonar.github.repository=' + repo)
+            settings(class: 'jenkins.mvn.DefaultSettingsProvider')
+            globalSettings(class: 'jenkins.mvn.DefaultGlobalSettingsProvider')
+            usePrivateRepository(false)
+        }
     }
 }
 
@@ -124,6 +152,10 @@ pullRequestJob.with {
 
     steps {
         phase('Build war file') {
+            job(sonarIncrJob.name) {
+                prop('GIT_REFSPEC', '+refs/pull/*:refs/remotes/origin/pr/*');
+                prop('GIT_COMMIT', '\${sha1}');
+            }
             job(buildWarJob.name) {
                 prop('GIT_REFSPEC', '+refs/pull/*:refs/remotes/origin/pr/*');
                 prop('GIT_COMMIT', '\${sha1}');
@@ -207,7 +239,7 @@ releaseJob.with {
         }
     }
 
-    goals ('clean deploy')
+    goals('clean deploy')
 
     wrappers {
         mavenRelease {
