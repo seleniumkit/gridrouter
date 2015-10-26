@@ -18,7 +18,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.http.HttpMethod.DELETE;
@@ -78,7 +80,7 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
         String uri = request.getRequestURI();
 
         String remoteHost = getRemoteHost(request);
-        
+
         if (!isUriValid(uri)) {
             LOGGER.warn("[{}] [{}] - request uri is {}", "INVALID_SESSION_HASH", remoteHost, uri);
             return null;
@@ -144,7 +146,14 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
     }
 
     protected String getCommand(String uri) {
-        return uri.substring(getUriPrefixLength());
+        String encodedCommand = uri.substring(getUriPrefixLength());
+        try {
+            return URLDecoder.decode(encodedCommand, UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error("[{}] - could not decode command: {}",
+                    "UNABLE_TO_DECODE_COMMAND", encodedCommand, e);
+            return encodedCommand;
+        }
     }
 
     protected boolean isUriValid(String uri) {
