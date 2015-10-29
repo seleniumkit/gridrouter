@@ -37,7 +37,7 @@ import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
         urlPatterns = {ProxyServlet.WD_HUB_SESSION + "*"},
         asyncSupported = true,
         initParams = {
-                @WebInitParam(name = "maxThreads", value = "512"),
+                @WebInitParam(name = "maxThreads", value = "1024"),
                 @WebInitParam(name = "timeout", value = "300000"),
                 @WebInitParam(name = "idleTimeout", value = "300000")
         }
