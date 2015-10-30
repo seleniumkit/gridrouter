@@ -11,7 +11,7 @@ import static java.util.Collections.shuffle;
  */
 public class RandomHostSelectionStrategy implements HostSelectionStrategy {
 
-    <T extends WithCount> T selectRandom(List<T> elements) {
+    protected <T extends WithCount> T selectRandom(List<T> elements) {
         List<T> copies = new ArrayList<>();
         for (T element : elements) {
             copies.addAll(nCopies(element.getCount(), element));
