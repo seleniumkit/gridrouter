@@ -6,6 +6,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_1.xsd"
         xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
+        xmlns:equals="http://jaxb2-commons.dev.java.net/basic/equals"
+        xmlns:hashcode="http://jaxb2-commons.dev.java.net/basic/hashCode"
         jaxb:extensionBindingPrefixes="xjc annox"
         schemaLocation="config.xsd"
         version="2.1">
@@ -32,6 +34,11 @@
     <jaxb:bindings node="//xs:complexType[@name='Host']">
         <inheritance:implements>ru.qatools.gridrouter.config.WithRoute</inheritance:implements>
         <inheritance:implements>ru.qatools.gridrouter.config.WithCount</inheritance:implements>
+    </jaxb:bindings>
+
+    <jaxb:bindings node="//xs:complexType[@name='Host']/xs:attribute[@name = 'count']">
+        <equals:ignored/>
+        <hashcode:ignored/>
     </jaxb:bindings>
 
     <jaxb:globalBindings>
