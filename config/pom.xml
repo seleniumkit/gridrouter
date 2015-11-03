@@ -21,6 +21,7 @@
                         <arg>-Xvalue-constructor</arg>
                         <arg>-Xequals</arg>
                         <arg>-XhashCode</arg>
+                        <arg>-XtoString</arg>
                     </args>
                 </configuration>
             </plugin>
