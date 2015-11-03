@@ -16,18 +16,22 @@
         <inheritance:implements>ru.qatools.gridrouter.config.WithBrowserVersionFind</inheritance:implements>
         <inheritance:implements>ru.qatools.gridrouter.config.WithXmlView</inheritance:implements>
         <inheritance:implements>ru.qatools.gridrouter.config.WithRoutesMap</inheritance:implements>
+        <inheritance:implements>ru.qatools.gridrouter.config.WithUpdateBrowsers</inheritance:implements>
     </jaxb:bindings>
 
     <jaxb:bindings node="//xs:complexType[@name='Browser']">
         <inheritance:implements>ru.qatools.gridrouter.config.WithVersionFind</inheritance:implements>
+        <inheritance:implements>ru.qatools.gridrouter.config.WithUpdateBrowser</inheritance:implements>
     </jaxb:bindings>
 
     <jaxb:bindings node="//xs:complexType[@name='Version']">
+        <inheritance:implements>ru.qatools.gridrouter.config.WithUpdateVersion</inheritance:implements>
         <inheritance:implements>ru.qatools.gridrouter.config.VersionWithCount</inheritance:implements>
     </jaxb:bindings>
 
     <jaxb:bindings node="//xs:complexType[@name='Region']">
         <inheritance:implements>ru.qatools.gridrouter.config.WithCopy</inheritance:implements>
+        <inheritance:implements>ru.qatools.gridrouter.config.WithUpdateHostsList</inheritance:implements>
         <inheritance:implements>ru.qatools.gridrouter.config.RegionWithCount</inheritance:implements>
     </jaxb:bindings>
 

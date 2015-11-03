@@ -65,27 +65,34 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
         } else {
             LOGGER.info("Loading quota configuration file [{}]", filename);
             String user = FilenameUtils.getBaseName(filename.toString());
-            updateQuota(user, browsers);
+            userBrowsers.put(user, browsers);
+            routes.putAll(browsers.getRoutesMap());
+            LOGGER.info("Loaded quota configuration for [{}]: \n\n{}", user, browsers.toXml());
         }
     }
 
-    public void updateQuota(String user, Browsers browsers) {
-        userBrowsers.put(user, browsers);
-        routes.putAll(browsers.getRoutesMap());
-        LOGGER.info("Loaded quota configuration for [{}]: \n\n{}", user, browsers.toXml());
+    public void updateBrowsers(Browsers newBrowsers) {
+        LOGGER.info("Got new browsers list, updating all quotas. New browsers list is:\n\n{}", newBrowsers.toXml());
+        userBrowsers.values().stream().forEach(browsers -> browsers.update(newBrowsers));
+
+        StringBuilder builder = new StringBuilder();
+        userBrowsers.entrySet().stream().forEach(e ->
+                builder.append(e.getKey()).append(":\n").append(e.getValue().toXml()).append("\n"));
+        LOGGER.info("Updated quotas, now they are the following:\n\n{}", builder.toString());
     }
 
     public Map<String, String> getRoutes() {
         return routes;
     }
 
+    // TODO refact with Optional
     public Version findVersion(String user, JsonCapabilities caps) {
         return userBrowsers.get(user).find(caps.getBrowserName(), caps.getVersion());
     }
 
     public Map<String, Integer> getBrowsersCountMap(String user) {
-        HashMap<String, Integer> countMap = new HashMap<>();
-        for (Browser browser : this.userBrowsers.get(user).getBrowsers()) {
+        Map<String, Integer> countMap = new HashMap<>();
+        for (Browser browser : userBrowsers.get(user).getBrowsers()) {
             for (Version version : browser.getVersions()) {
                 countMap.put(browser.getName() + ":" + version.getNumber(), version.getCount());
             }

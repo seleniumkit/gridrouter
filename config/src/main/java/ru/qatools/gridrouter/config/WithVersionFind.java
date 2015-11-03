@@ -12,6 +12,10 @@ public interface WithVersionFind {
         return findVersion(getDefaultVersion());
     }
 
+    default Version findVersion(Version version) {
+        return findVersion(version.getNumber());
+    }
+
     default Version findVersion(String versionPrefix) {
         return getVersions().stream()
                 .filter(v -> v.getNumber().startsWith(versionPrefix))
