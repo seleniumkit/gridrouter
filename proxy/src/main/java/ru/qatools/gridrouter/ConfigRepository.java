@@ -49,12 +49,16 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
                 LOGGER.debug("Starting quota watcher");
                 BeanWatcher.watchFor(Browsers.class, quotaDirectory.toPath(), XML_GLOB, this);
             } else {
-                LOGGER.debug("Loading quota configuration");
-                BeanLoader.loadAll(Browsers.class, quotaDirectory.toPath(), XML_GLOB, this);
+                reload();
             }
         } catch (IOException e) {
             LOGGER.error("Quota configuration loading failed", e);
         }
+    }
+
+    public void reload() throws IOException {
+        LOGGER.debug("Loading quota configuration");
+        BeanLoader.loadAll(Browsers.class, quotaDirectory.toPath(), XML_GLOB, this);
     }
 
     @Override
