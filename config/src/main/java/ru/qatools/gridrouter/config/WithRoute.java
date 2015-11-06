@@ -10,17 +10,19 @@ import java.nio.charset.StandardCharsets;
  */
 public interface WithRoute {
 
-    int getPort();
-
-    String getName();
-
-    int getCount();
+    default String getAddress() {
+        return getName() + ":" + getPort();
+    }
 
     default String getRoute() {
-        return String.format("http://%s:%d", getName(), getPort());
+        return "http://" + getAddress();
     }
 
     default String getRouteId() {
         return DigestUtils.md5Hex(getRoute().getBytes(StandardCharsets.UTF_8));
     }
+
+    String getName();
+
+    int getPort();
 }
