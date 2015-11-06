@@ -12,6 +12,10 @@ public interface WithBrowserVersionFind {
 
     List<Browser> getBrowsers();
 
+    default Browser findBrowser(Browser browser) {
+        return findBrowser(browser.getName());
+    }
+
     default Browser findBrowser(String name) {
         return getBrowsers().stream()
                 .filter(b -> b.getName().equals(name))

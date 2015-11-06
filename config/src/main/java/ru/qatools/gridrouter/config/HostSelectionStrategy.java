@@ -10,5 +10,4 @@ public interface HostSelectionStrategy {
     Region selectRegion(List<Region> regions);
 
     Host selectHost(List<Host> hosts);
-
 }
