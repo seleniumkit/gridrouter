@@ -88,7 +88,7 @@ public class RouteServlet extends HttpServlet {
         Version actualVersion = config.findVersion(user, caps);
 
         if (actualVersion == null) {
-            LOGGER.warn("[{}] [{}] [{}] [{}]", "UNSUPPORTED_BROWSER", user, remoteHost, browser);
+            LOGGER.warn("[UNSUPPORTED_BROWSER] [{}] [{}] [{}]", user, remoteHost, browser);
             replyWithError(format("Cannot find %s capabilities on any available node",
                     caps.describe()), response);
             return;
@@ -111,7 +111,7 @@ public class RouteServlet extends HttpServlet {
 
             String route = host.getRoute();
             try (CloseableHttpClient client = newHttpClient()) {
-                LOGGER.info("[{}] [{}] [{}] [{}] [{}] [{}]", "SESSION_ATTEMPTED", user, remoteHost, browser, route, attempt);
+                LOGGER.info("[SESSION_ATTEMPTED] [{}] [{}] [{}] [{}] [{}]", user, remoteHost, browser, route, attempt);
 
                 String target = route + request.getRequestURI();
                 HttpResponse hubResponse = client.execute(post(target, message));
@@ -121,18 +121,18 @@ public class RouteServlet extends HttpServlet {
                     String sessionId = hubMessage.getSessionId();
                     hubMessage.setSessionId(host.getRouteId() + sessionId);
                     replyWithOk(hubMessage, response);
-                    LOGGER.info("[{}] [{}] [{}] [{}] [{}] [{}] [{}]",
-                            "SESSION_CREATED", user, remoteHost, browser, route, sessionId, attempt);
+                    LOGGER.info("[SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
+                            user, remoteHost, browser, route, sessionId, attempt);
                     stats.startSession();
                     return;
                 }
-                LOGGER.warn("[{}] [{}] [{}] [{}] [{}] - {}",
-                        "SESSION_FAILED", user, remoteHost, browser, route, hubMessage.getErrorMessage());
+                LOGGER.warn("[SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",
+                        user, remoteHost, browser, route, hubMessage.getErrorMessage());
             } catch (JsonProcessingException exception) {
-                LOGGER.error("[{}] [{}] [{}] [{}] - {}", "BAD_HUB_JSON",
+                LOGGER.error("[BAD_HUB_JSON] [{}] [{}] [{}] - {}", "",
                         user, remoteHost, browser, route, exception.getMessage());
             } catch (IOException exception) {
-                LOGGER.error("[{}] [{}] [{}] [{}] - {}", "HUB_COMMUNICATION_FAILURE",
+                LOGGER.error("[HUB_COMMUNICATION_FAILURE] [{}] [{}] [{}] - {}",
                         user, remoteHost, browser, route, exception.getMessage());
             }
 
@@ -147,7 +147,7 @@ public class RouteServlet extends HttpServlet {
             }
         }
 
-        LOGGER.error("[{}] [{}] [{}] [{}]", "SESSION_NOT_CREATED", user, remoteHost, browser);
+        LOGGER.error("[SESSION_NOT_CREATED] [{}] [{}] [{}]", user, remoteHost, browser);
         replyWithError("Cannot create session on any available node", response);
     }
 

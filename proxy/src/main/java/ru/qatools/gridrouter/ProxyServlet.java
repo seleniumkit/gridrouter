@@ -68,8 +68,8 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
             Request request = getRequestWithoutSessionId(clientRequest, proxyRequest);
             super.sendProxyRequest(clientRequest, proxyResponse, request);
         } catch (Exception exception) {
-            LOGGER.error("[{}] [{}] - could not read client request, proxying request as is",
-                    "REQUEST_READ_FAILURE", clientRequest.getRemoteHost(), exception);
+            LOGGER.error("[REQUEST_READ_FAILURE] [{}] - could not read client request, proxying request as is",
+                    clientRequest.getRemoteHost(), exception);
             super.sendProxyRequest(clientRequest, proxyResponse, proxyRequest);
         }
     }
@@ -81,7 +81,7 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
         String remoteHost = getRemoteHost(request);
 
         if (!isUriValid(uri)) {
-            LOGGER.warn("[{}] [{}] - request uri is {}", "INVALID_SESSION_HASH", remoteHost, uri);
+            LOGGER.warn("[INVALID_SESSION_HASH] [{}] - request uri is {}", remoteHost, uri);
             return null;
         }
 
@@ -89,24 +89,23 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
         String command = getCommand(uri);
 
         if (route == null) {
-            LOGGER.error("[{}] [{}] - request uri is {}", "ROUTE_NOT_FOUND", remoteHost, uri);
+            LOGGER.error("[ROUTE_NOT_FOUND] [{}] - request uri is {}", remoteHost, uri);
             return null;
         }
 
         if (isSessionDeleteRequest(request, command)) {
-            LOGGER.info("[{}] [{}] [{}] [{}]", "SESSION_DELETED", remoteHost, route, command);
+            LOGGER.info("[SESSION_DELETED] [{}] [{}] [{}]", remoteHost, route, command);
             stats.stopSession();
         }
 
         try {
             return redirectionUrl(route, command);
         } catch (Exception exception) {
-            LOGGER.error("[{}] [{}] - error building redirection uri because of {}\n"
+            LOGGER.error("[REDIRECTION_URL_ERROR] [{}] - error building redirection uri because of {}\n"
                             + "    request uri:    {}\n"
                             + "    parsed route:   {}\n"
                             + "    parsed command: {}",
-                    "REDIRECTION_URL_ERROR", remoteHost,
-                    exception.toString(), uri, route,  command);
+                    remoteHost, exception.toString(), uri, route,  command);
         }
         return null;
     }
@@ -127,11 +126,9 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
             message.setSessionId(null);
             return message.toJson();
         } catch (IOException exception) {
-            LOGGER.error("[{}] [{}] - could not create proxy request without session id, "
+            LOGGER.error("[UNABLE_TO_REMOVE_SESSION_ID] [{}] - could not create proxy request without session id, "
                             + "proxying request as is. Request content is: {}",
-                    "UNABLE_TO_REMOVE_SESSION_ID", remoteHost,
-                    content,
-                    exception);
+                    remoteHost, content, exception);
         }
         return content;
     }
@@ -149,8 +146,7 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
         try {
             return URLDecoder.decode(encodedCommand, UTF_8.name());
         } catch (UnsupportedEncodingException e) {
-            LOGGER.error("[{}] - could not decode command: {}",
-                    "UNABLE_TO_DECODE_COMMAND", encodedCommand, e);
+            LOGGER.error("[UNABLE_TO_DECODE_COMMAND] - could not decode command: {}", encodedCommand, e);
             return encodedCommand;
         }
     }
