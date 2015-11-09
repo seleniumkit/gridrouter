@@ -7,7 +7,7 @@ import java.util.List;
  */
 public interface HostSelectionStrategy {
 
-    Region selectRegion(List<Region> regions);
+    Region selectRegion(List<Region> allRegions, List<Region> unvisitedRegions);
 
     Host selectHost(List<Host> hosts);
 
