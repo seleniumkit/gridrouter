@@ -21,8 +21,8 @@ public class RandomHostSelectionStrategy implements HostSelectionStrategy {
     }
 
     @Override
-    public Region selectRegion(List<Region> regions) {
-        return selectRandom(regions);
+    public Region selectRegion(List<Region> allRegions, List<Region> unvisitedRegions) {
+        return selectRandom(unvisitedRegions);
     }
 
     @Override

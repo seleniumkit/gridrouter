@@ -41,7 +41,8 @@ public class QuotaReloadTest {
         replacePortInQuotaFile(USER_1, HUB_PORT_2);
         Thread.sleep(5000); // just to avoid multiple exceptions in the logs
         assertThat(USER_1, should(canObtain(firefox()))
-                .whileWaitingUntil(timeoutHasExpired().withPollingInterval(SECONDS.toMillis(3))));
+                .whileWaitingUntil(timeoutHasExpired(SECONDS.toMillis(60))
+                        .withPollingInterval(SECONDS.toMillis(3))));
     }
 
     @Test
@@ -49,7 +50,8 @@ public class QuotaReloadTest {
         copyQuotaFile(USER_1, USER_4, HUB_PORT_2);
         Thread.sleep(5000); // just to avoid multiple exceptions in the logs
         assertThat(USER_4, should(canObtain(firefox()))
-                .whileWaitingUntil(timeoutHasExpired().withPollingInterval(SECONDS.toMillis(3))));
+                .whileWaitingUntil(timeoutHasExpired(SECONDS.toMillis(60))
+                        .withPollingInterval(SECONDS.toMillis(3))));
     }
 
     @After

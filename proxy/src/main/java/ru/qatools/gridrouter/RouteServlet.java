@@ -98,15 +98,15 @@ public class RouteServlet extends HttpServlet {
 
         capabilityProcessorFactory.getProcessor(caps).process(caps);
 
-        List<Region> actualRegions = actualVersion.getRegions()
+        List<Region> allRegions = actualVersion.getRegions()
                 .stream().map(Region::copy).collect(toList());
-        List<Region> unusedRegions = new ArrayList<>(actualRegions);
+        List<Region> unvisitedRegions = new ArrayList<>(allRegions);
 
         int attempt = 0;
-        while (!actualRegions.isEmpty()) {
+        while (!allRegions.isEmpty()) {
             attempt++;
 
-            Region currentRegion = hostSelectionStrategy.selectRegion(unusedRegions);
+            Region currentRegion = hostSelectionStrategy.selectRegion(allRegions, unvisitedRegions);
             Host host = hostSelectionStrategy.selectHost(currentRegion.getHosts());
 
             String route = host.getRoute();
@@ -138,12 +138,12 @@ public class RouteServlet extends HttpServlet {
 
             currentRegion.getHosts().remove(host);
             if (currentRegion.getHosts().isEmpty()) {
-                actualRegions.remove(currentRegion);
+                allRegions.remove(currentRegion);
             }
 
-            unusedRegions.remove(currentRegion);
-            if (unusedRegions.isEmpty()) {
-                unusedRegions = new ArrayList<>(actualRegions);
+            unvisitedRegions.remove(currentRegion);
+            if (unvisitedRegions.isEmpty()) {
+                unvisitedRegions = new ArrayList<>(allRegions);
             }
         }
 

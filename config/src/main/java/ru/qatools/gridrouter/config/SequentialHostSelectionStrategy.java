@@ -7,15 +7,11 @@ import java.util.List;
  */
 public class SequentialHostSelectionStrategy implements HostSelectionStrategy {
 
-    private int regionIndex;
-
     private int hostIndex;
 
     @Override
-    public Region selectRegion(List<Region> regions) {
-        Region region = regions.get(regionIndex++ % regions.size());
-        regionIndex %= regions.size();
-        return region;
+    public Region selectRegion(List<Region> allRegions, List<Region> unvisitedRegions) {
+        return unvisitedRegions.get(0);
     }
 
     @Override
