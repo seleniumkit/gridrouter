@@ -103,47 +103,49 @@ public class RouteServlet extends HttpServlet {
         List<Region> unvisitedRegions = new ArrayList<>(allRegions);
 
         int attempt = 0;
-        while (!allRegions.isEmpty()) {
-            attempt++;
+        try (CloseableHttpClient client = newHttpClient()) {
+            while (!allRegions.isEmpty()) {
+                attempt++;
 
-            Region currentRegion = hostSelectionStrategy.selectRegion(allRegions, unvisitedRegions);
-            Host host = hostSelectionStrategy.selectHost(currentRegion.getHosts());
+                Region currentRegion = hostSelectionStrategy.selectRegion(allRegions, unvisitedRegions);
+                Host host = hostSelectionStrategy.selectHost(currentRegion.getHosts());
 
-            String route = host.getRoute();
-            try (CloseableHttpClient client = newHttpClient()) {
-                LOGGER.info("[SESSION_ATTEMPTED] [{}] [{}] [{}] [{}] [{}]", user, remoteHost, browser, route, attempt);
+                String route = host.getRoute();
+                try {
+                    LOGGER.info("[SESSION_ATTEMPTED] [{}] [{}] [{}] [{}] [{}]", user, remoteHost, browser, route, attempt);
 
-                String target = route + request.getRequestURI();
-                HttpResponse hubResponse = client.execute(post(target, message));
-                JsonMessage hubMessage = JsonMessageFactory.from(hubResponse.getEntity().getContent());
+                    String target = route + request.getRequestURI();
+                    HttpResponse hubResponse = client.execute(post(target, message));
+                    JsonMessage hubMessage = JsonMessageFactory.from(hubResponse.getEntity().getContent());
 
-                if (hubResponse.getStatusLine().getStatusCode() == SC_OK) {
-                    String sessionId = hubMessage.getSessionId();
-                    hubMessage.setSessionId(host.getRouteId() + sessionId);
-                    replyWithOk(hubMessage, response);
-                    LOGGER.info("[SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
-                            user, remoteHost, browser, route, sessionId, attempt);
-                    stats.startSession();
-                    return;
+                    if (hubResponse.getStatusLine().getStatusCode() == SC_OK) {
+                        String sessionId = hubMessage.getSessionId();
+                        hubMessage.setSessionId(host.getRouteId() + sessionId);
+                        replyWithOk(hubMessage, response);
+                        LOGGER.info("[SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
+                                user, remoteHost, browser, route, sessionId, attempt);
+                        stats.startSession();
+                        return;
+                    }
+                    LOGGER.warn("[SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",
+                            user, remoteHost, browser, route, hubMessage.getErrorMessage());
+                } catch (JsonProcessingException exception) {
+                    LOGGER.error("[BAD_HUB_JSON] [{}] [{}] [{}] - {}", "",
+                            user, remoteHost, browser, route, exception.getMessage());
+                } catch (IOException exception) {
+                    LOGGER.error("[HUB_COMMUNICATION_FAILURE] [{}] [{}] [{}] - {}",
+                            user, remoteHost, browser, route, exception.getMessage());
                 }
-                LOGGER.warn("[SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",
-                        user, remoteHost, browser, route, hubMessage.getErrorMessage());
-            } catch (JsonProcessingException exception) {
-                LOGGER.error("[BAD_HUB_JSON] [{}] [{}] [{}] - {}", "",
-                        user, remoteHost, browser, route, exception.getMessage());
-            } catch (IOException exception) {
-                LOGGER.error("[HUB_COMMUNICATION_FAILURE] [{}] [{}] [{}] - {}",
-                        user, remoteHost, browser, route, exception.getMessage());
-            }
 
-            currentRegion.getHosts().remove(host);
-            if (currentRegion.getHosts().isEmpty()) {
-                allRegions.remove(currentRegion);
-            }
+                currentRegion.getHosts().remove(host);
+                if (currentRegion.getHosts().isEmpty()) {
+                    allRegions.remove(currentRegion);
+                }
 
-            unvisitedRegions.remove(currentRegion);
-            if (unvisitedRegions.isEmpty()) {
-                unvisitedRegions = new ArrayList<>(allRegions);
+                unvisitedRegions.remove(currentRegion);
+                if (unvisitedRegions.isEmpty()) {
+                    unvisitedRegions = new ArrayList<>(allRegions);
+                }
             }
         }
 
