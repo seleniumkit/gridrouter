@@ -3,7 +3,7 @@
     <parent>
         <groupId>ru.qatools.seleniumkit</groupId>
         <artifactId>gridrouter</artifactId>
-        <version>1.26-SNAPSHOT</version>
+        <version>1.26</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
