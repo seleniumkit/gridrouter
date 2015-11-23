@@ -185,6 +185,6 @@ public class RouteServlet extends HttpServlet {
                         .setConnectionRequestTimeout(10000)
                         .setConnectTimeout(10000)
                         .build()
-        ).setRedirectStrategy(new LaxRedirectStrategy()).build();
+        ).setRedirectStrategy(new LaxRedirectStrategy()).disableAutomaticRetries().build();
     }
 }
