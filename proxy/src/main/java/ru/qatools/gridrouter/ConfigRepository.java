@@ -72,6 +72,10 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
         }
     }
 
+    public Map<String, Browsers> getQuotaMap() {
+        return userBrowsers;
+    }
+
     public Map<String, String> getRoutes() {
         return routes;
     }
