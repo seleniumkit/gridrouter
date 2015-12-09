@@ -41,10 +41,6 @@ public class CommandDecodingTest {
 
     @Test
     public void testOutput() throws Exception {
-        ProxyServlet proxyServlet = new ProxyServlet();
-        String command = proxyServlet.getCommand(requestUri);
-        assertThat(command, endsWith(elementId));
+        assertThat(JsonWireUtils.getCommand(requestUri), endsWith(elementId));
     }
-
-
 }

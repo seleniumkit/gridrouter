@@ -1,7 +1,6 @@
 package ru.qatools.gridrouter;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.slf4j.Logger;
@@ -18,13 +17,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.web.context.support.SpringBeanAutowiringSupport.processInjectionBasedOnServletContext;
+import static ru.qatools.gridrouter.JsonWireUtils.*;
 import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
 
 /**
@@ -34,7 +30,7 @@ import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
  * @author Artem Eroshenko eroshenkoam@yandex-team.ru
  */
 @WebServlet(
-        urlPatterns = {ProxyServlet.WD_HUB_SESSION + "*"},
+        urlPatterns = {WD_HUB_SESSION + "*"},
         asyncSupported = true,
         initParams = {
                 @WebInitParam(name = "timeout", value = "300000"),
@@ -44,10 +40,6 @@ import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
 public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyServlet.class);
-
-    public static final String WD_HUB_SESSION = "/wd/hub/session/";
-
-    public static final int SESSION_HASH_LENGTH = 32;
 
     @Autowired
     private ConfigRepository config;
@@ -85,7 +77,7 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
             return null;
         }
 
-        String route = getRoute(uri);
+        String route = config.getRoute(getSessionHash(uri));
         String command = getCommand(uri);
 
         if (route == null) {
@@ -131,40 +123,5 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
                     remoteHost, content, exception);
         }
         return content;
-    }
-
-    protected String redirectionUrl(String host, String command) throws URISyntaxException {
-        return new URIBuilder(host).setPath(WD_HUB_SESSION + command).build().toString();
-    }
-
-    protected String getRoute(String uri) {
-        return config.getRoutes().get(getSessionHash(uri));
-    }
-
-    protected String getCommand(String uri) {
-        String encodedCommand = uri.substring(getUriPrefixLength());
-        try {
-            return URLDecoder.decode(encodedCommand, UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error("[UNABLE_TO_DECODE_COMMAND] - could not decode command: {}", encodedCommand, e);
-            return encodedCommand;
-        }
-    }
-
-    protected boolean isUriValid(String uri) {
-        return uri.length() > getUriPrefixLength();
-    }
-
-    protected boolean isSessionDeleteRequest(HttpServletRequest request, String command) {
-        return DELETE.name().equalsIgnoreCase(request.getMethod())
-                && !command.contains("/");
-    }
-
-    protected String getSessionHash(String uri) {
-        return uri.substring(WD_HUB_SESSION.length(), getUriPrefixLength());
-    }
-
-    protected int getUriPrefixLength() {
-        return WD_HUB_SESSION.length() + SESSION_HASH_LENGTH;
     }
 }
