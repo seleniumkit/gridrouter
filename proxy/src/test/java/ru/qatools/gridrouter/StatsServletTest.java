@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import ru.qatools.gridrouter.json.GridStats;
 import ru.qatools.gridrouter.utils.GridRouterRule;
 import ru.qatools.gridrouter.utils.HubEmulatorRule;
 
@@ -38,9 +37,9 @@ public class StatsServletTest {
 
     @Test
     public void testStats() throws IOException {
-        GridStats actual = executeSimpleGet(BASE_URL_WITH_AUTH + "/stats");
+        int actual = executeSimpleGet(BASE_URL_WITH_AUTH + "/stats");
         assertThat(actual, notNullValue());
-        assertThat(actual.getOpenSessions(), is(0));
+        assertThat(actual, is(0));
 
         hub.emulate().newSessions(1);
         hub.emulate().quit();
@@ -48,19 +47,19 @@ public class StatsServletTest {
         WebDriver driver = new RemoteWebDriver(hubUrl(BASE_URL_WITH_AUTH), firefox());
 
         actual = executeSimpleGet(BASE_URL_WITH_AUTH + "/stats");
-        assertThat(actual.getOpenSessions(), is(1));
+        assertThat(actual, is(1));
 
         driver.quit();
 
         actual = executeSimpleGet(BASE_URL_WITH_AUTH + "/stats");
-        assertThat(actual.getOpenSessions(), is(0));
+        assertThat(actual, is(0));
     }
 
-    public static GridStats executeSimpleGet(String url) throws IOException {
+    public static int executeSimpleGet(String url) throws IOException {
         CloseableHttpResponse execute = HttpClientBuilder
                 .create().build()
                 .execute(new HttpGet(url));
         InputStream content = execute.getEntity().getContent();
-        return new ObjectMapper().readValue(content, GridStats.class);
+        return new ObjectMapper().readValue(content, Integer.class);
     }
 }

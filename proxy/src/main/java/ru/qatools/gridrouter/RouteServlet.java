@@ -17,7 +17,6 @@ import ru.qatools.gridrouter.config.Host;
 import ru.qatools.gridrouter.config.HostSelectionStrategy;
 import ru.qatools.gridrouter.config.Region;
 import ru.qatools.gridrouter.config.Version;
-import ru.qatools.gridrouter.json.GridStats;
 import ru.qatools.gridrouter.json.JsonCapabilities;
 import ru.qatools.gridrouter.json.JsonMessage;
 import ru.qatools.gridrouter.json.JsonMessageFactory;
@@ -64,7 +63,7 @@ public class RouteServlet extends HttpServlet {
     private HostSelectionStrategy hostSelectionStrategy;
 
     @Autowired
-    private GridStats stats;
+    private SessionStorage sessionStorage;
 
     @Autowired
     private CapabilityProcessorFactory capabilityProcessorFactory;
@@ -124,7 +123,7 @@ public class RouteServlet extends HttpServlet {
                         replyWithOk(hubMessage, response);
                         LOGGER.info("[SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
                                 user, remoteHost, browser, route, sessionId, attempt);
-                        stats.startSession();
+                        sessionStorage.put(hubMessage.getSessionId(), user);
                         return;
                     }
                     LOGGER.warn("[SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",

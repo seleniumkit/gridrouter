@@ -41,6 +41,15 @@ public final class JsonWireUtils {
         return uri.substring(WD_HUB_SESSION.length(), getUriPrefixLength());
     }
 
+    public static String getFullSessionId(String uri) {
+        String tail = uri.substring(WD_HUB_SESSION.length());
+        int end = tail.indexOf('/');
+        if (end < 0) {
+            return tail;
+        }
+        return tail.substring(0, end);
+    }
+
     public static int getUriPrefixLength() {
         return WD_HUB_SESSION.length() + SESSION_HASH_LENGTH;
     }

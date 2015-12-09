@@ -6,7 +6,6 @@ import org.eclipse.jetty.client.util.StringContentProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.qatools.gridrouter.json.GridStats;
 import ru.qatools.gridrouter.json.JsonMessage;
 import ru.qatools.gridrouter.json.JsonMessageFactory;
 
@@ -45,7 +44,7 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
     private ConfigRepository config;
 
     @Autowired
-    private GridStats stats;
+    private SessionStorage sessionStorage;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -87,7 +86,9 @@ public class ProxyServlet extends org.eclipse.jetty.proxy.ProxyServlet {
 
         if (isSessionDeleteRequest(request, command)) {
             LOGGER.info("[SESSION_DELETED] [{}] [{}] [{}]", remoteHost, route, command);
-            stats.stopSession();
+            sessionStorage.remove(getFullSessionId(uri));
+        } else {
+            sessionStorage.update(getFullSessionId(uri));
         }
 
         try {
