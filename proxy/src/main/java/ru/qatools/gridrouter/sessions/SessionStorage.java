@@ -1,4 +1,4 @@
-package ru.qatools.gridrouter;
+package ru.qatools.gridrouter.sessions;
 
 import java.time.Duration;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
  */
 public interface SessionStorage {
 
-    void put(String sessionId, String user);
+    void put(String sessionId, String user, String browser, String version);
 
     void update(String sessionId);
 
@@ -16,5 +16,5 @@ public interface SessionStorage {
 
     List<String> expireSessionsOlderThan(Duration duration);
 
-    int getCountFor(String user);
+    BrowsersCountMap getBrowsersCountFor(String user);
 }

@@ -2,6 +2,8 @@ package ru.qatools.gridrouter;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.qatools.gridrouter.json.JsonFormatter;
+import ru.qatools.gridrouter.sessions.SessionStorage;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -16,7 +18,7 @@ import java.io.OutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.context.support.SpringBeanAutowiringSupport.processInjectionBasedOnServletContext;
 
 /**
@@ -39,10 +41,11 @@ public class StatsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setStatus(SC_OK);
-        response.setContentType(TEXT_PLAIN_VALUE);
+        response.setContentType(APPLICATION_JSON_VALUE);
         try (OutputStream output = response.getOutputStream()) {
-            int count = sessionStorage.getCountFor(request.getRemoteUser());
-            IOUtils.write(String.valueOf(count), output, UTF_8);
+            IOUtils.write(JsonFormatter.toJson(
+                    sessionStorage.getBrowsersCountFor(request.getRemoteUser())
+            ), output, UTF_8);
         }
     }
 }

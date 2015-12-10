@@ -1,11 +1,10 @@
-package ru.qatools.gridrouter;
+package ru.qatools.gridrouter.sessions;
 
 import java.time.Duration;
 import java.time.temporal.Temporal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.time.ZonedDateTime.now;
 import static java.util.stream.Collectors.toList;
@@ -16,14 +15,17 @@ import static java.util.stream.Collectors.toList;
 public class MemorySessionStorage implements SessionStorage {
 
     private final Map<String, Temporal> session2instant = new HashMap<>();
-    private final Map<String, Integer> user2count      = new HashMap<>();
-    private final Map<String, String>  session2user    = new HashMap<>();
+    private final Map<String, String> session2user = new HashMap<>();
+    private final Map<String, BrowserVersion> session2browserVersion = new HashMap<>();
+    private final Map<String, BrowsersCountMap> user2browserCount = new HashMap<>();
 
     @Override
-    public synchronized void put(String sessionId, String user) {
+    public synchronized void put(String sessionId, String user, String browser, String version) {
         if (session2instant.put(sessionId, now()) == null) {
-            user2count.compute(user, (k, count) -> Optional.ofNullable(count).orElse(0) + 1);
             session2user.put(sessionId, user);
+            session2browserVersion.put(sessionId, new BrowserVersion(browser, version));
+            user2browserCount.putIfAbsent(user, new BrowsersCountMap());
+            user2browserCount.get(user).increment(browser, version);
         }
     }
 
@@ -36,7 +38,8 @@ public class MemorySessionStorage implements SessionStorage {
     public synchronized void remove(String sessionId) {
         if (session2instant.remove(sessionId) != null) {
             String user = session2user.remove(sessionId);
-            user2count.compute(user, (k, count) -> count - 1);
+            BrowserVersion browser = session2browserVersion.remove(sessionId);
+            user2browserCount.get(user).decrement(browser);
         }
     }
 
@@ -51,7 +54,7 @@ public class MemorySessionStorage implements SessionStorage {
     }
 
     @Override
-    public synchronized int getCountFor(String user) {
-        return user2count.getOrDefault(user, 0);
+    public synchronized BrowsersCountMap getBrowsersCountFor(String user) {
+        return user2browserCount.getOrDefault(user, new BrowsersCountMap());
     }
 }

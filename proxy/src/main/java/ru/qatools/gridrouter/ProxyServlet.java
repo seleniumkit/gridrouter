@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.qatools.gridrouter.json.JsonMessage;
 import ru.qatools.gridrouter.json.JsonMessageFactory;
+import ru.qatools.gridrouter.sessions.SessionStorage;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;

@@ -20,6 +20,7 @@ import ru.qatools.gridrouter.config.Version;
 import ru.qatools.gridrouter.json.JsonCapabilities;
 import ru.qatools.gridrouter.json.JsonMessage;
 import ru.qatools.gridrouter.json.JsonMessageFactory;
+import ru.qatools.gridrouter.sessions.SessionStorage;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -123,7 +124,7 @@ public class RouteServlet extends HttpServlet {
                         replyWithOk(hubMessage, response);
                         LOGGER.info("[SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
                                 user, remoteHost, browser, route, sessionId, attempt);
-                        sessionStorage.put(hubMessage.getSessionId(), user);
+                        sessionStorage.put(hubMessage.getSessionId(), user, browser, actualVersion.getNumber());
                         return;
                     }
                     LOGGER.warn("[SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",
