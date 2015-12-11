@@ -103,6 +103,7 @@ public class RouteServlet extends HttpServlet {
         List<Region> unvisitedRegions = new ArrayList<>(allRegions);
 
         int attempt = 0;
+        JsonMessage hubMessage = null;
         try (CloseableHttpClient client = newHttpClient()) {
             while (!allRegions.isEmpty()) {
                 attempt++;
@@ -116,7 +117,7 @@ public class RouteServlet extends HttpServlet {
 
                     String target = route + request.getRequestURI();
                     HttpResponse hubResponse = client.execute(post(target, message));
-                    JsonMessage hubMessage = JsonMessageFactory.from(hubResponse.getEntity().getContent());
+                    hubMessage = JsonMessageFactory.from(hubResponse.getEntity().getContent());
 
                     if (hubResponse.getStatusLine().getStatusCode() == SC_OK) {
                         String sessionId = hubMessage.getSessionId();
@@ -150,7 +151,11 @@ public class RouteServlet extends HttpServlet {
         }
 
         LOGGER.error("[SESSION_NOT_CREATED] [{}] [{}] [{}]", user, remoteHost, browser);
-        replyWithError("Cannot create session on any available node", response);
+        if (hubMessage == null) {
+            replyWithError("Cannot create session on any available node", response);
+        } else {
+            replyWithError(hubMessage, response);
+        }
     }
 
     protected void replyWithOk(JsonMessage message, HttpServletResponse response) throws IOException {
@@ -158,7 +163,11 @@ public class RouteServlet extends HttpServlet {
     }
 
     protected void replyWithError(String errorMessage, HttpServletResponse response) throws IOException {
-        reply(SC_INTERNAL_SERVER_ERROR, JsonMessageFactory.error(13, errorMessage), response);
+        replyWithError(JsonMessageFactory.error(13, errorMessage), response);
+    }
+
+    protected void replyWithError(JsonMessage message, HttpServletResponse response) throws IOException {
+        reply(SC_INTERNAL_SERVER_ERROR, message, response);
     }
 
     protected void reply(int code, JsonMessage message, HttpServletResponse response) throws IOException {
