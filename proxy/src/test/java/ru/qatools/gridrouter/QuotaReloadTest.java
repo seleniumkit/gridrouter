@@ -61,7 +61,7 @@ public class QuotaReloadTest {
     }
 
     @AfterClass
-    public static void restoreQuotaFiles() {
+    public static void restoreQuotaFiles() throws Exception {
         replacePortInQuotaFile(USER_1, HUB_PORT);
         deleteQuotaFile(USER_4);
     }

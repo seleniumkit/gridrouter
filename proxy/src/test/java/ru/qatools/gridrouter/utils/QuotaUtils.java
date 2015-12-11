@@ -1,10 +1,13 @@
 package ru.qatools.gridrouter.utils;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import ru.qatools.gridrouter.config.Browsers;
 
 import javax.xml.bind.JAXB;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 
 import static java.lang.ClassLoader.getSystemResource;
 import static ru.qatools.gridrouter.utils.GridRouterRule.USER_1;
@@ -20,11 +23,11 @@ public final class QuotaUtils {
     public static final String QUOTA_FILE_PATTERN
             = getSystemResource("quota/" + USER_1 + ".xml").getPath().replace(USER_1, "%s");
 
-    public static void replacePortInQuotaFile(String user, int port) {
+    public static void replacePortInQuotaFile(String user, int port) throws IOException {
         copyQuotaFile(user, user, port);
     }
 
-    public static void copyQuotaFile(String srcUser, String dstUser, int withHubPort) {
+    public static void copyQuotaFile(String srcUser, String dstUser, int withHubPort) throws IOException {
         Browsers browsers = getQuotaFor(srcUser);
         setPort(browsers, withHubPort);
         writeQuotaFor(dstUser, browsers);
@@ -36,8 +39,11 @@ public final class QuotaUtils {
         return SerializationUtils.clone(browsersOriginal);
     }
 
-    public static void writeQuotaFor(String user, Browsers browsers) {
-        JAXB.marshal(browsers, getQuotaFile(user));
+    public static void writeQuotaFor(String user, Browsers browsers) throws IOException {
+        //workaround to write the whole file at once
+        StringWriter xml = new StringWriter();
+        JAXB.marshal(browsers, xml);
+        FileUtils.write(getQuotaFile(user), xml.toString());
     }
 
     public static File getQuotaFile(String user) {
