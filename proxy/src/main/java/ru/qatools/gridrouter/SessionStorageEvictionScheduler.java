@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import ru.qatools.gridrouter.sessions.SessionStorage;
+import ru.qatools.gridrouter.sessions.StatsCounter;
 
 import java.time.Duration;
 
@@ -20,10 +20,10 @@ public class SessionStorageEvictionScheduler {
     private int timeout;
 
     @Autowired
-    private SessionStorage sessionStorage;
+    private StatsCounter statsCounter;
 
     @Scheduled(cron = "${grid.router.evict.sessions.cron}")
     public void expireOldSessions() {
-        sessionStorage.expireSessionsOlderThan(Duration.ofSeconds(timeout));
+        statsCounter.expireSessionsOlderThan(Duration.ofSeconds(timeout));
     }
 }

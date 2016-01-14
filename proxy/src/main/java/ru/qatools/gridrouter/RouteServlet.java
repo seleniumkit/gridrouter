@@ -20,14 +20,12 @@ import ru.qatools.gridrouter.config.Version;
 import ru.qatools.gridrouter.json.JsonCapabilities;
 import ru.qatools.gridrouter.json.JsonMessage;
 import ru.qatools.gridrouter.json.JsonMessageFactory;
-import ru.qatools.gridrouter.sessions.SessionStorage;
+import ru.qatools.gridrouter.sessions.StatsCounter;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -42,7 +40,6 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
-import static org.springframework.web.context.support.SpringBeanAutowiringSupport.processInjectionBasedOnServletContext;
 import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
 
 /**
@@ -53,27 +50,21 @@ import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
  */
 @WebServlet(urlPatterns = {"/wd/hub/session"}, asyncSupported = true)
 @ServletSecurity(value = @HttpConstraint(rolesAllowed = {"user"}))
-public class RouteServlet extends HttpServlet {
+public class RouteServlet extends SpringHttpServlet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteServlet.class);
 
     @Autowired
-    private ConfigRepository config;
+    private transient ConfigRepository config;
 
     @Autowired
-    private HostSelectionStrategy hostSelectionStrategy;
+    private transient HostSelectionStrategy hostSelectionStrategy;
 
     @Autowired
-    private SessionStorage sessionStorage;
+    private transient StatsCounter statsCounter;
 
     @Autowired
-    private CapabilityProcessorFactory capabilityProcessorFactory;
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        processInjectionBasedOnServletContext(this, config.getServletContext());
-    }
+    private transient CapabilityProcessorFactory capabilityProcessorFactory;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -125,7 +116,7 @@ public class RouteServlet extends HttpServlet {
                         replyWithOk(hubMessage, response);
                         LOGGER.info("[SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
                                 user, remoteHost, browser, route, sessionId, attempt);
-                        sessionStorage.put(hubMessage.getSessionId(), user, browser, actualVersion.getNumber());
+                        statsCounter.startSession(hubMessage.getSessionId(), user, browser, actualVersion.getNumber());
                         return;
                     }
                     LOGGER.warn("[SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",

@@ -19,6 +19,6 @@
 
     <bean id="hostSelectionStrategy" class="ru.qatools.gridrouter.config.RandomHostSelectionStrategy"/>
 
-    <bean class="ru.qatools.gridrouter.sessions.MemorySessionStorage"/>
+    <bean class="ru.qatools.gridrouter.sessions.MemoryStatsCounter"/>
 
 </beans>

@@ -7,7 +7,7 @@ import java.util.Optional;
 /**
  * @author Innokenty Shuvalov innokenty@yandex-team.ru
  */
-public class BrowsersCountMap extends HashMap<String, Map<String, Integer>> {
+public class BrowsersCountMap extends HashMap<String, Map<String, Integer>> implements GridRouterUserStats {
 
     public void increment(String browser, String version) {
         putIfAbsent(browser, new HashMap<>());
