@@ -21,7 +21,7 @@ public class MemoryStatsCounter implements StatsCounter {
     private final Map<String, BrowsersCountMap> user2browserCount = new HashMap<>();
 
     @Override
-    public synchronized void startSession(String sessionId, String user, String browser, String version) {
+    public synchronized void startSession(String sessionId, String user, String browser, String version, String route) {
         if (session2instant.put(sessionId, now()) == null) {
             session2user.put(sessionId, user);
             session2browserVersion.put(sessionId, new BrowserVersion(browser, version));
@@ -31,12 +31,12 @@ public class MemoryStatsCounter implements StatsCounter {
     }
 
     @Override
-    public void updateSession(String sessionId) {
+    public void updateSession(String sessionId, String route) {
         session2instant.replace(sessionId, now());
     }
 
     @Override
-    public synchronized void deleteSession(String sessionId) {
+    public synchronized void deleteSession(String sessionId, String route) {
         if (session2instant.remove(sessionId) != null) {
             String user = session2user.remove(sessionId);
             BrowserVersion browser = session2browserVersion.remove(sessionId);

@@ -8,11 +8,25 @@ import java.util.Set;
  */
 public interface StatsCounter {
 
-    void startSession(String sessionId, String user, String browser, String version);
+    default void startSession(String sessionId, String user, String browser, String version) {
+        startSession(sessionId, user, browser, version, null);
+    }
 
-    void updateSession(String sessionId);
+    default void updateSession(String sessionId) {
+        updateSession(sessionId, null);
+    }
 
-    void deleteSession(String sessionId);
+    default void deleteSession(String sessionId) {
+        deleteSession(sessionId, null);
+    }
+
+    void startSession(String sessionId, String user, String browser, String version, String route);
+
+    default void updateSession(String sessionId, String route) {
+
+    }
+
+    void deleteSession(String sessionId, String route);
 
     void expireSessionsOlderThan(Duration duration);
 

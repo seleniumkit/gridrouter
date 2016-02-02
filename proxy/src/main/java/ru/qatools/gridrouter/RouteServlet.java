@@ -116,7 +116,7 @@ public class RouteServlet extends SpringHttpServlet {
                         replyWithOk(hubMessage, response);
                         LOGGER.info("[SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
                                 user, remoteHost, browser, route, sessionId, attempt);
-                        statsCounter.startSession(hubMessage.getSessionId(), user, browser, actualVersion.getNumber());
+                        statsCounter.startSession(hubMessage.getSessionId(), user, browser, actualVersion.getNumber(), route);
                         return;
                     }
                     LOGGER.warn("[SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",
