@@ -17,17 +17,15 @@ import ru.qatools.gridrouter.config.Host;
 import ru.qatools.gridrouter.config.HostSelectionStrategy;
 import ru.qatools.gridrouter.config.Region;
 import ru.qatools.gridrouter.config.Version;
-import ru.qatools.gridrouter.json.GridStats;
 import ru.qatools.gridrouter.json.JsonCapabilities;
 import ru.qatools.gridrouter.json.JsonMessage;
 import ru.qatools.gridrouter.json.JsonMessageFactory;
+import ru.qatools.gridrouter.sessions.StatsCounter;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -42,7 +40,6 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
-import static org.springframework.web.context.support.SpringBeanAutowiringSupport.processInjectionBasedOnServletContext;
 import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
 
 /**
@@ -53,27 +50,21 @@ import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
  */
 @WebServlet(urlPatterns = {"/wd/hub/session"}, asyncSupported = true)
 @ServletSecurity(value = @HttpConstraint(rolesAllowed = {"user"}))
-public class RouteServlet extends HttpServlet {
+public class RouteServlet extends SpringHttpServlet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteServlet.class);
 
     @Autowired
-    private ConfigRepository config;
+    private transient ConfigRepository config;
 
     @Autowired
-    private HostSelectionStrategy hostSelectionStrategy;
+    private transient HostSelectionStrategy hostSelectionStrategy;
 
     @Autowired
-    private GridStats stats;
+    private transient StatsCounter statsCounter;
 
     @Autowired
-    private CapabilityProcessorFactory capabilityProcessorFactory;
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        processInjectionBasedOnServletContext(this, config.getServletContext());
-    }
+    private transient CapabilityProcessorFactory capabilityProcessorFactory;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -103,6 +94,7 @@ public class RouteServlet extends HttpServlet {
         List<Region> unvisitedRegions = new ArrayList<>(allRegions);
 
         int attempt = 0;
+        JsonMessage hubMessage = null;
         try (CloseableHttpClient client = newHttpClient()) {
             while (!allRegions.isEmpty()) {
                 attempt++;
@@ -116,7 +108,7 @@ public class RouteServlet extends HttpServlet {
 
                     String target = route + request.getRequestURI();
                     HttpResponse hubResponse = client.execute(post(target, message));
-                    JsonMessage hubMessage = JsonMessageFactory.from(hubResponse.getEntity().getContent());
+                    hubMessage = JsonMessageFactory.from(hubResponse.getEntity().getContent());
 
                     if (hubResponse.getStatusLine().getStatusCode() == SC_OK) {
                         String sessionId = hubMessage.getSessionId();
@@ -124,7 +116,7 @@ public class RouteServlet extends HttpServlet {
                         replyWithOk(hubMessage, response);
                         LOGGER.info("[SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
                                 user, remoteHost, browser, route, sessionId, attempt);
-                        stats.startSession();
+                        statsCounter.startSession(hubMessage.getSessionId(), user, browser, actualVersion.getNumber(), route);
                         return;
                     }
                     LOGGER.warn("[SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",
@@ -150,7 +142,11 @@ public class RouteServlet extends HttpServlet {
         }
 
         LOGGER.error("[SESSION_NOT_CREATED] [{}] [{}] [{}]", user, remoteHost, browser);
-        replyWithError("Cannot create session on any available node", response);
+        if (hubMessage == null) {
+            replyWithError("Cannot create session on any available node", response);
+        } else {
+            replyWithError(hubMessage, response);
+        }
     }
 
     protected void replyWithOk(JsonMessage message, HttpServletResponse response) throws IOException {
@@ -158,7 +154,11 @@ public class RouteServlet extends HttpServlet {
     }
 
     protected void replyWithError(String errorMessage, HttpServletResponse response) throws IOException {
-        reply(SC_INTERNAL_SERVER_ERROR, JsonMessageFactory.error(13, errorMessage), response);
+        replyWithError(JsonMessageFactory.error(13, errorMessage), response);
+    }
+
+    protected void replyWithError(JsonMessage message, HttpServletResponse response) throws IOException {
+        reply(SC_INTERNAL_SERVER_ERROR, message, response);
     }
 
     protected void reply(int code, JsonMessage message, HttpServletResponse response) throws IOException {

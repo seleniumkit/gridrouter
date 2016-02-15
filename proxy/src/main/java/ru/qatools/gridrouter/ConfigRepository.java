@@ -76,8 +76,8 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
         return userBrowsers;
     }
 
-    public Map<String, String> getRoutes() {
-        return routes;
+    public String getRoute(String routeId) {
+        return routes.get(routeId);
     }
 
     public Version findVersion(String user, JsonCapabilities caps) {
