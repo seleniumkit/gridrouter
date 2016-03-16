@@ -21,6 +21,8 @@ import ru.qatools.gridrouter.config.Version;
 import ru.qatools.gridrouter.json.JsonCapabilities;
 import ru.qatools.gridrouter.json.JsonMessage;
 import ru.qatools.gridrouter.json.JsonMessageFactory;
+import ru.qatools.gridrouter.sessions.AvailableBrowserCheckExeption;
+import ru.qatools.gridrouter.sessions.AvailableBrowsersChecker;
 import ru.qatools.gridrouter.sessions.StatsCounter;
 
 import javax.servlet.ServletException;
@@ -57,28 +59,27 @@ import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
 public class RouteServlet extends SpringHttpServlet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteServlet.class);
-    
+
     private static final String ROUTE_TIMEOUT_CAPABILITY = "grid.router.route.timeout.seconds";
-    
+
     private static final int MAX_ROUTE_TIMEOUT_SECONDS = 300;
 
     @Autowired
     private transient ConfigRepository config;
-
     @Autowired
     private transient HostSelectionStrategy hostSelectionStrategy;
-
     @Autowired
     private transient StatsCounter statsCounter;
-
     @Autowired
     private transient CapabilityProcessorFactory capabilityProcessorFactory;
+    @Autowired
+    private transient AvailableBrowsersChecker avblBrowsersChecker;
 
     @Value("${grid.router.route.timeout.seconds:120}")
     private int routeTimeout;
 
     private AtomicLong requestCounter = new AtomicLong();
-    
+
     private volatile boolean stop;
 
     @Override
@@ -87,7 +88,7 @@ public class RouteServlet extends SpringHttpServlet {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
         JsonMessage message = JsonMessageFactory.from(request.getInputStream());
         JsonCapabilities caps = message.getDesiredCapabilities();
-        
+
         Future<Object> future = executor.submit(getRouteCallable(request, response));
         executor.schedule((Runnable) () -> future.cancel(true), routeTimeout, TimeUnit.SECONDS);
         executor.shutdown();
@@ -106,7 +107,7 @@ public class RouteServlet extends SpringHttpServlet {
             return null;
         };
     }
-    
+
     private int getRouteTimeout(String user, JsonCapabilities caps) {
         try {
             if (caps.any().containsKey(ROUTE_TIMEOUT_CAPABILITY)) {
@@ -116,7 +117,8 @@ public class RouteServlet extends SpringHttpServlet {
                 }
                 LOGGER.warn("[{}] [INVALID_ROUTE_TIMEOUT] [{}]", user, desiredRouteTimeout);
             }
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
         return routeTimeout;
     }
 
@@ -124,7 +126,7 @@ public class RouteServlet extends SpringHttpServlet {
 
         long requestId = requestCounter.getAndIncrement();
         long initialSeconds = Instant.now().getEpochSecond();
-        
+
         JsonMessage message = JsonMessageFactory.from(request.getInputStream());
         JsonCapabilities caps = message.getDesiredCapabilities();
 
@@ -151,6 +153,10 @@ public class RouteServlet extends SpringHttpServlet {
         int attempt = 0;
         JsonMessage hubMessage = null;
         try (CloseableHttpClient client = newHttpClient()) {
+            if (actualVersion.getPermittedCount() != null) {
+                avblBrowsersChecker.ensureFreeBrowsersAvailable(user, remoteHost, browser, actualVersion);
+            }
+
             while (!allRegions.isEmpty() && !stop) {
                 attempt++;
 
@@ -195,6 +201,9 @@ public class RouteServlet extends SpringHttpServlet {
                     unvisitedRegions = new ArrayList<>(allRegions);
                 }
             }
+        } catch (AvailableBrowserCheckExeption e) {
+            LOGGER.error("[AVAILABLE_BROWSER_CHECK_ERROR] [{}] [{}] [{}] - {}",
+                    user, remoteHost, browser, e.getMessage());
         }
 
         LOGGER.error("[{}] [SESSION_NOT_CREATED] [{}] [{}] [{}]", requestId, user, remoteHost, browser);
@@ -204,6 +213,7 @@ public class RouteServlet extends SpringHttpServlet {
             replyWithError(hubMessage, response);
         }
     }
+
 
     protected void replyWithOk(JsonMessage message, HttpServletResponse response) throws IOException {
         reply(SC_OK, message, response);

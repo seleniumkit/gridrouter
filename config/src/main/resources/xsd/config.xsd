@@ -25,6 +25,7 @@
             <xsd:element name="region" type="qa:Region" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="number" type="xsd:string" use="required"/>
+        <xsd:attribute name="permittedCount" type="xsd:int" use="optional"/>
     </xsd:complexType>
 
     <xsd:complexType name="Region">

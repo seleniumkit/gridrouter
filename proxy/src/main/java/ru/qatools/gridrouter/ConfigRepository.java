@@ -81,7 +81,8 @@ public class ConfigRepository implements BeanChangeListener<Browsers> {
     }
 
     public Version findVersion(String user, JsonCapabilities caps) {
-        return userBrowsers.get(user).find(caps.getBrowserName(), caps.getVersion());
+        final Browsers browsers = userBrowsers.get(user);
+        return browsers != null ? browsers.find(caps.getBrowserName(), caps.getVersion()) : null;
     }
 
     public Map<String, Integer> getBrowsersCountMap(String user) {

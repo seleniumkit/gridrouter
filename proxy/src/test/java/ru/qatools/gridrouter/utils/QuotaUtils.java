@@ -17,11 +17,11 @@ import static ru.qatools.gridrouter.utils.GridRouterRule.USER_1;
  */
 public final class QuotaUtils {
 
-    private QuotaUtils() {
-    }
-
     public static final String QUOTA_FILE_PATTERN
             = getSystemResource("quota/" + USER_1 + ".xml").getPath().replace(USER_1, "%s");
+
+    private QuotaUtils() {
+    }
 
     public static void replacePortInQuotaFile(String user, int port) throws IOException {
         copyQuotaFile(user, user, port);
@@ -43,7 +43,11 @@ public final class QuotaUtils {
         //workaround to write the whole file at once
         StringWriter xml = new StringWriter();
         JAXB.marshal(browsers, xml);
-        FileUtils.write(getQuotaFile(user), xml.toString());
+        final File fileToWrite = getQuotaFile(user);
+        final File tmpFile = File.createTempFile(user, "xml");
+        FileUtils.write(tmpFile, xml.toString());
+        FileUtils.deleteQuietly(fileToWrite);
+        FileUtils.moveFile(tmpFile, fileToWrite);
     }
 
     public static File getQuotaFile(String user) {

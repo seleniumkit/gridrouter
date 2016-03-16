@@ -33,4 +33,8 @@ public interface StatsCounter {
     Set<String> getActiveSessions();
 
     GridRouterUserStats getStats(String user);
+
+    int getSessionsCountForUser(String user);
+
+    int getSessionsCountForUserAndBrowser(String user, String browser, String version);
 }

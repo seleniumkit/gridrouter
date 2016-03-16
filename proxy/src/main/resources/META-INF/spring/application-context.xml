@@ -17,8 +17,8 @@
         </property>
     </bean>
 
-    <bean id="hostSelectionStrategy" class="ru.qatools.gridrouter.config.RandomHostSelectionStrategy"/>
-
-    <bean class="ru.qatools.gridrouter.sessions.MemoryStatsCounter"/>
+    <bean id="hostSelectionStrategy" class="${grid.router.host.selection.strategy}"/>
+    <bean class="${grid.router.stats.counter}"/>
+    <bean class="${grid.router.available.browsers.checker}"/>
 
 </beans>
