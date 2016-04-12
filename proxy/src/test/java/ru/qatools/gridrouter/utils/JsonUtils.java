@@ -7,6 +7,7 @@ import ru.qatools.gridrouter.json.JsonMessage;
 import ru.qatools.gridrouter.json.JsonMessageFactory;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.openqa.selenium.remote.CapabilityType.BROWSER_NAME;
 import static org.openqa.selenium.remote.CapabilityType.PLATFORM;
@@ -34,11 +35,8 @@ public final class JsonUtils {
 
     public static JsonMessage buildJsonMessage(DesiredCapabilities capabilities) throws IOException {
         JSONObject capabilitiesObject = new JSONObject();
-        capabilitiesObject.put(BROWSER_NAME, capabilities.getBrowserName());
-        capabilitiesObject.put(VERSION, capabilities.getVersion());
-        capabilitiesObject.put(PLATFORM, capabilities.getPlatform());
-        capabilitiesObject.put(PROXY, capabilities.getCapability(PROXY));
-
+        Map<String, ?> capabilitiesMap = capabilities.asMap();
+        capabilitiesMap.keySet().forEach(k -> capabilitiesObject.put(k, capabilitiesMap.get(k)));
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("desiredCapabilities", capabilitiesObject);
         return JsonMessageFactory.from(jsonObject.toString());
