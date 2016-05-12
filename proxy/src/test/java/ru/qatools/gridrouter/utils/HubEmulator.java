@@ -59,6 +59,12 @@ public class HubEmulator {
             return this;
         }
 
+        public HubEmulations newSessionFreeze() {
+            hub.when(newSessionRequest(), once()).callback(callback()
+                    .withCallbackClass(FreezeCallback.class.getCanonicalName()));
+            return this;
+        }
+        
         public HubEmulations navigation() {
             hub.when(sessionRequest("url"))
                .callback(callback().withCallbackClass(
