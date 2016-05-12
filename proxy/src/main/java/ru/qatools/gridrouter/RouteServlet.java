@@ -12,6 +12,7 @@ import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import ru.qatools.gridrouter.caps.CapabilityProcessorFactory;
 import ru.qatools.gridrouter.config.Host;
 import ru.qatools.gridrouter.config.HostSelectionStrategy;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -65,11 +67,33 @@ public class RouteServlet extends SpringHttpServlet {
 
     @Autowired
     private transient CapabilityProcessorFactory capabilityProcessorFactory;
-
+    
+    @Value("${grid.router.route.timeout.seconds:300}")
+    private int routeTimeout;
+    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+        Future<Object> future = executor.submit(getRouteCallable(request, response));
+        executor.schedule((Runnable) () -> future.cancel(true), routeTimeout, TimeUnit.SECONDS);
+        executor.shutdown();
+        try {
+            executor.awaitTermination(routeTimeout, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
+        replyWithError("Timed out when searching for valid host", response);
+    }
 
+    private Callable<Object> getRouteCallable(HttpServletRequest request, HttpServletResponse response) {
+        return () -> {
+            route(request, response);
+            return null;
+        };
+    }
+    
+    private void route(HttpServletRequest request, HttpServletResponse response) throws IOException {
         JsonMessage message = JsonMessageFactory.from(request.getInputStream());
         JsonCapabilities caps = message.getDesiredCapabilities();
 
@@ -148,7 +172,7 @@ public class RouteServlet extends SpringHttpServlet {
             replyWithError(hubMessage, response);
         }
     }
-
+    
     protected void replyWithOk(JsonMessage message, HttpServletResponse response) throws IOException {
         reply(SC_OK, message, response);
     }
