@@ -10,7 +10,7 @@
 
     <groupId>ru.qatools.seleniumkit</groupId>
     <artifactId>gridrouter</artifactId>
-    <version>1.29-SNAPSHOT</version>
+    <version>1.29</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -47,7 +47,7 @@
         <connection>scm:git:git@github.com:seleniumkit/gridrouter.git</connection>
         <developerConnection>scm:git:git@github.com:seleniumkit/gridrouter.git</developerConnection>
         <url>https://github.com/seleniumkit/gridrouter</url>
-        <tag>HEAD</tag>
+        <tag>1.29</tag>
     </scm>
 
     <issueManagement>
