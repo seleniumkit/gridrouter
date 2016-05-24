@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -74,6 +75,7 @@ public class RouteServlet extends SpringHttpServlet {
             throws ServletException, IOException {
 
         long requestId = requestCounter.getAndIncrement();
+        long initialSeconds = Instant.now().getEpochSecond();
         
         JsonMessage message = JsonMessageFactory.from(request.getInputStream());
         JsonCapabilities caps = message.getDesiredCapabilities();
@@ -119,8 +121,9 @@ public class RouteServlet extends SpringHttpServlet {
                         String sessionId = hubMessage.getSessionId();
                         hubMessage.setSessionId(host.getRouteId() + sessionId);
                         replyWithOk(hubMessage, response);
-                        LOGGER.info("[{}] [SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
-                                requestId, user, remoteHost, browser, route, sessionId, attempt);
+                        long createdDurationSeconds = Instant.now().getEpochSecond() - initialSeconds;
+                        LOGGER.info("[{}] [{}] [SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
+                                requestId, createdDurationSeconds, user, remoteHost, browser, route, sessionId, attempt);
                         statsCounter.startSession(hubMessage.getSessionId(), user, browser, actualVersion.getNumber(), route);
                         return;
                     }
