@@ -62,4 +62,20 @@ public class MemoryStatsCounter implements StatsCounter {
     public synchronized BrowsersCountMap getStats(String user) {
         return user2browserCount.getOrDefault(user, new BrowsersCountMap());
     }
+
+    @Override
+    public int getSessionsCountForUser(String user) {
+        return user2browserCount.getOrDefault(user, new BrowsersCountMap()).values()
+                .parallelStream().flatMapToInt(version -> version.values().stream().mapToInt(Integer::intValue))
+                .sum();
+    }
+
+    @Override
+    public int getSessionsCountForUserAndBrowser(String user, String browser, String version) {
+        return user2browserCount.getOrDefault(user, new BrowsersCountMap()).entrySet()
+                .parallelStream().filter(entry -> entry.getKey().equals(browser))
+                .flatMapToInt(entry -> entry.getValue().entrySet().parallelStream()
+                        .filter(ver -> ver.getKey().equals(version)).mapToInt(Map.Entry::getValue)
+                ).sum();
+    }
 }

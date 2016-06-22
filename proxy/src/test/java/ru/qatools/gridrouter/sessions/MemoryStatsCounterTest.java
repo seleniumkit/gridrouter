@@ -38,8 +38,12 @@ public class MemoryStatsCounterTest {
         storage.startSession("session2", "user", "firefox", "33");
         storage.startSession("session3", "user", "firefox", "33");
         assertThat(countJsonFor("user"), is("{\"firefox\":{\"33\":3}}"));
+        assertThat(storage.getSessionsCountForUser("user"), is(3));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "33"), is(3));
         storage.startSession("session1", "user", "firefox", "33");
         assertThat(countJsonFor("user"), is("{\"firefox\":{\"33\":3}}"));
+        assertThat(storage.getSessionsCountForUser("user"), is(3));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "33"), is(3));
     }
 
     @Test
@@ -48,6 +52,9 @@ public class MemoryStatsCounterTest {
         storage.startSession("session2", "user", "firefox", "33");
         storage.startSession("session3", "user", "firefox", "33");
         assertThat(countJsonFor("user"), is("{\"chrome\":{\"33\":1},\"firefox\":{\"33\":2}}"));
+        assertThat(storage.getSessionsCountForUser("user"), is(3));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "33"), is(2));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "chrome", "33"), is(1));
     }
 
     @Test
@@ -59,6 +66,10 @@ public class MemoryStatsCounterTest {
         storage.startSession("session5", "user", "firefox", "firefox");
         storage.startSession("session6", "user", "firefox", "firefox");
         assertThat(countJsonFor("user"), is("{\"firefox\":{\"33\":1,\"34\":2,\"firefox\":3}}"));
+        assertThat(storage.getSessionsCountForUser("user"), is(6));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "33"), is(1));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "34"), is(2));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "firefox"), is(3));
     }
 
     @Test
@@ -66,12 +77,16 @@ public class MemoryStatsCounterTest {
         storage.startSession("session1", "user", "firefox", "33");
         storage.startSession("session2", "user", "firefox", "33");
         assertThat(countJsonFor("user"), is("{\"firefox\":{\"33\":2}}"));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "33"), is(2));
         storage.deleteSession("session1");
         assertThat(countJsonFor("user"), is("{\"firefox\":{\"33\":1}}"));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "33"), is(1));
         storage.deleteSession("session1");
         assertThat(countJsonFor("user"), is("{\"firefox\":{\"33\":1}}"));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "33"), is(1));
         storage.deleteSession("session2");
         assertThat(countJsonFor("user"), is("{}"));
+        assertThat(storage.getSessionsCountForUserAndBrowser("user", "firefox", "33"), is(0));
     }
 
     @Test
