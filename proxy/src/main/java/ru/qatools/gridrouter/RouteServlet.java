@@ -87,13 +87,12 @@ public class RouteServlet extends SpringHttpServlet {
             throws ServletException, IOException {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
         JsonMessage message = JsonMessageFactory.from(request.getInputStream());
-        JsonCapabilities caps = message.getDesiredCapabilities();
 
-        Future<Object> future = executor.submit(getRouteCallable(request, response));
+        Future<Object> future = executor.submit(getRouteCallable(request, message, response));
         executor.schedule((Runnable) () -> future.cancel(true), routeTimeout, TimeUnit.SECONDS);
         executor.shutdown();
         try {
-            executor.awaitTermination(getRouteTimeout(request.getRemoteUser(), caps), TimeUnit.SECONDS);
+            executor.awaitTermination(getRouteTimeout(request.getRemoteUser(), message), TimeUnit.SECONDS);
             stop = true;
         } catch (InterruptedException e) {
             executor.shutdownNow();
@@ -101,14 +100,15 @@ public class RouteServlet extends SpringHttpServlet {
         replyWithError("Timed out when searching for valid host", response);
     }
 
-    private Callable<Object> getRouteCallable(HttpServletRequest request, HttpServletResponse response) {
+    private Callable<Object> getRouteCallable(HttpServletRequest request, JsonMessage message, HttpServletResponse response) {
         return () -> {
-            route(request, response);
+            route(request, message, response);
             return null;
         };
     }
 
-    private int getRouteTimeout(String user, JsonCapabilities caps) {
+    private int getRouteTimeout(String user, JsonMessage message) {
+        JsonCapabilities caps = message.getDesiredCapabilities();
         try {
             if (caps.any().containsKey(ROUTE_TIMEOUT_CAPABILITY)) {
                 Integer desiredRouteTimeout = Integer.valueOf(String.valueOf(caps.any().get(ROUTE_TIMEOUT_CAPABILITY)));
@@ -122,12 +122,11 @@ public class RouteServlet extends SpringHttpServlet {
         return routeTimeout;
     }
 
-    private void route(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void route(HttpServletRequest request, JsonMessage message, HttpServletResponse response) throws IOException {
 
         long requestId = requestCounter.getAndIncrement();
         long initialSeconds = Instant.now().getEpochSecond();
 
-        JsonMessage message = JsonMessageFactory.from(request.getInputStream());
         JsonCapabilities caps = message.getDesiredCapabilities();
 
         String user = request.getRemoteUser();
