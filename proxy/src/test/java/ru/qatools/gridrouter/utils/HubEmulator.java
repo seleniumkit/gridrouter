@@ -6,6 +6,8 @@ import org.mockserver.matchers.Times;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 
+import java.util.concurrent.TimeUnit;
+
 import static java.util.UUID.randomUUID;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.matchers.Times.once;
@@ -59,6 +61,15 @@ public class HubEmulator {
             return this;
         }
 
+        public HubEmulations newSessionFreeze(int seconds) {
+            hub.when(newSessionRequest(), once()).respond(
+                    response()
+//                            .withDelay(TimeUnit.SECONDS, seconds)
+                            .withStatusCode(500)
+            );
+            return this;
+        }
+        
         public HubEmulations navigation() {
             hub.when(sessionRequest("url"))
                .callback(callback().withCallbackClass(

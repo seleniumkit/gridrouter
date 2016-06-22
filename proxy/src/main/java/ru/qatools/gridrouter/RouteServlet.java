@@ -12,6 +12,7 @@ import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import ru.qatools.gridrouter.caps.CapabilityProcessorFactory;
 import ru.qatools.gridrouter.config.Host;
 import ru.qatools.gridrouter.config.HostSelectionStrategy;
@@ -33,6 +34,7 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.String.format;
@@ -55,6 +57,10 @@ import static ru.qatools.gridrouter.RequestUtils.getRemoteHost;
 public class RouteServlet extends SpringHttpServlet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteServlet.class);
+    
+    private static final String ROUTE_TIMEOUT_CAPABILITY = "grid.router.route.timeout.seconds";
+    
+    private static final int MAX_ROUTE_TIMEOUT_SECONDS = 300;
 
     @Autowired
     private transient ConfigRepository config;
@@ -67,12 +73,54 @@ public class RouteServlet extends SpringHttpServlet {
 
     @Autowired
     private transient CapabilityProcessorFactory capabilityProcessorFactory;
-    
+
+    @Value("${grid.router.route.timeout.seconds:120}")
+    private int routeTimeout;
+
     private AtomicLong requestCounter = new AtomicLong();
+    
+    private volatile boolean stop;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+        JsonMessage message = JsonMessageFactory.from(request.getInputStream());
+        JsonCapabilities caps = message.getDesiredCapabilities();
+        
+        Future<Object> future = executor.submit(getRouteCallable(request, response));
+        executor.schedule((Runnable) () -> future.cancel(true), routeTimeout, TimeUnit.SECONDS);
+        executor.shutdown();
+        try {
+            executor.awaitTermination(getRouteTimeout(request.getRemoteUser(), caps), TimeUnit.SECONDS);
+            stop = true;
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
+        replyWithError("Timed out when searching for valid host", response);
+    }
+
+    private Callable<Object> getRouteCallable(HttpServletRequest request, HttpServletResponse response) {
+        return () -> {
+            route(request, response);
+            return null;
+        };
+    }
+    
+    private int getRouteTimeout(String user, JsonCapabilities caps) {
+        try {
+            if (caps.any().containsKey(ROUTE_TIMEOUT_CAPABILITY)) {
+                Integer desiredRouteTimeout = Integer.valueOf(String.valueOf(caps.any().get(ROUTE_TIMEOUT_CAPABILITY)));
+                if (desiredRouteTimeout < MAX_ROUTE_TIMEOUT_SECONDS) {
+                    return desiredRouteTimeout;
+                }
+                LOGGER.warn("[{}] [INVALID_ROUTE_TIMEOUT] [{}]", user, desiredRouteTimeout);
+            }
+        } catch (NumberFormatException ignored) {}
+        return routeTimeout;
+    }
+
+    private void route(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         long requestId = requestCounter.getAndIncrement();
         long initialSeconds = Instant.now().getEpochSecond();
@@ -103,7 +151,7 @@ public class RouteServlet extends SpringHttpServlet {
         int attempt = 0;
         JsonMessage hubMessage = null;
         try (CloseableHttpClient client = newHttpClient()) {
-            while (!allRegions.isEmpty()) {
+            while (!allRegions.isEmpty() && !stop) {
                 attempt++;
 
                 Region currentRegion = hostSelectionStrategy.selectRegion(allRegions, unvisitedRegions);
