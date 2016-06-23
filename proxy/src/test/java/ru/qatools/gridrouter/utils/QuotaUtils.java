@@ -6,7 +6,6 @@ import ru.qatools.gridrouter.config.Browsers;
 
 import javax.xml.bind.JAXB;
 import java.io.File;
-import java.io.IOException;
 import java.io.StringWriter;
 
 import static java.lang.ClassLoader.getSystemResource;
@@ -23,13 +22,17 @@ public final class QuotaUtils {
     private QuotaUtils() {
     }
 
-    public static void replacePortInQuotaFile(String user, int port) throws IOException {
-        copyQuotaFile(user, user, port);
+    public static void replacePortInQuotaFile(String user, int port) {
+        replacePortInQuotaFile(user, 0, 0, port);
     }
 
-    public static void copyQuotaFile(String srcUser, String dstUser, int withHubPort) throws IOException {
+    public static void replacePortInQuotaFile(String user, int regionNum, int hostNum, int port) {
+        copyQuotaFile(user, user, regionNum, hostNum, port);
+    }
+
+    public static void copyQuotaFile(String srcUser, String dstUser, int regionNum, int hostNum, int withHubPort) {
         Browsers browsers = getQuotaFor(srcUser);
-        setPort(browsers, withHubPort);
+        setPort(browsers, regionNum, hostNum, withHubPort);
         writeQuotaFor(dstUser, browsers);
     }
 
@@ -39,15 +42,19 @@ public final class QuotaUtils {
         return SerializationUtils.clone(browsersOriginal);
     }
 
-    public static void writeQuotaFor(String user, Browsers browsers) throws IOException {
-        //workaround to write the whole file at once
-        StringWriter xml = new StringWriter();
-        JAXB.marshal(browsers, xml);
-        final File fileToWrite = getQuotaFile(user);
-        final File tmpFile = File.createTempFile(user, "xml");
-        FileUtils.write(tmpFile, xml.toString());
-        FileUtils.deleteQuietly(fileToWrite);
-        FileUtils.moveFile(tmpFile, fileToWrite);
+    public static synchronized void writeQuotaFor(String user, Browsers browsers) {
+        try {
+            //workaround to write the whole file at once
+            StringWriter xml = new StringWriter();
+            JAXB.marshal(browsers, xml);
+            final File fileToWrite = getQuotaFile(user);
+            final File tmpFile = File.createTempFile(user, "xml");
+            FileUtils.write(tmpFile, xml.toString());
+            FileUtils.copyFile(tmpFile, fileToWrite);
+            FileUtils.deleteQuietly(tmpFile);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static File getQuotaFile(String user) {
@@ -59,11 +66,11 @@ public final class QuotaUtils {
         getQuotaFile(user).delete();
     }
 
-    public static void setPort(Browsers browsers, int port) {
+    public static void setPort(Browsers browsers, int regionNum, int hostNumber, int port) {
         browsers.getBrowsers().get(0)
                 .getVersions().get(0)
-                .getRegions().get(0)
-                .getHosts().get(0)
+                .getRegions().get(regionNum)
+                .getHosts().get(hostNumber)
                 .setPort(port);
     }
 }

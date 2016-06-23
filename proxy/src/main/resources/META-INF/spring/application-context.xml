@@ -17,6 +17,7 @@
         </property>
     </bean>
 
+    <bean id="configRepository" class="${grid.router.quota.repository}"/>
     <bean id="hostSelectionStrategy" class="${grid.router.host.selection.strategy}"/>
     <bean class="${grid.router.stats.counter}"/>
     <bean class="${grid.router.available.browsers.checker}"/>

@@ -64,7 +64,7 @@ public class HubEmulator {
         public HubEmulations newSessionFreeze(int seconds) {
             hub.when(newSessionRequest(), once()).respond(
                     response()
-//                            .withDelay(TimeUnit.SECONDS, seconds)
+                            .withDelay(TimeUnit.SECONDS, seconds)
                             .withStatusCode(500)
             );
             return this;

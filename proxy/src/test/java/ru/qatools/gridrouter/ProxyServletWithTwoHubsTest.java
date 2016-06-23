@@ -3,7 +3,6 @@ package ru.qatools.gridrouter;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import ru.qatools.gridrouter.utils.GridRouterRule;
 import ru.qatools.gridrouter.utils.HubEmulatorRule;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,15 +15,10 @@ import static ru.qatools.gridrouter.utils.GridRouterRule.USER_2;
 public class ProxyServletWithTwoHubsTest extends ProxyServletTest {
 
     @Rule
-    public HubEmulatorRule hub1 = new HubEmulatorRule(GridRouterRule.HUB_PORT);
+    public HubEmulatorRule hub1 = new HubEmulatorRule( 8081, hub -> hub.emulate().newSessions(1));
 
     @Rule
-    public HubEmulatorRule hub2 = new HubEmulatorRule(GridRouterRule.HUB_PORT + 1);
-
-    {
-        hub1.emulate().newSessions(1);
-        hub2.emulate().newSessions(1);
-    }
+    public HubEmulatorRule hub2 = new HubEmulatorRule( 8082, hub -> hub.emulate().newSessions(1));
 
     public ProxyServletWithTwoHubsTest() throws Exception {
         super(USER_2);
@@ -77,10 +71,11 @@ public class ProxyServletWithTwoHubsTest extends ProxyServletTest {
         super.testSendRequestParams();
     }
 
+    @Test
     @Override
     public void testFindElement() {
-        hub1.emulate().findElement();
-        hub2.emulate().findElement();
+        hub1.emulate().navigation().findElement();
+        hub2.emulate().navigation().findElement();
         super.testFindElement();
     }
 }

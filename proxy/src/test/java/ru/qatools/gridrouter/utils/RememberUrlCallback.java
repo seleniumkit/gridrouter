@@ -13,7 +13,7 @@ import static org.mockserver.model.HttpResponse.response;
  */
 public class RememberUrlCallback implements ExpectationCallback {
 
-    private static String currentUrl;
+    private static String currentUrl = "{\"value\":\"\"}";
 
     @Override
     public HttpResponse handle(HttpRequest httpRequest) {

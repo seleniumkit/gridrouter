@@ -6,7 +6,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -21,10 +20,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static ru.qatools.gridrouter.utils.GridRouterRule.USER_1;
-import static ru.qatools.gridrouter.utils.GridRouterRule.USER_2;
-import static ru.qatools.gridrouter.utils.GridRouterRule.USER_3;
-import static ru.qatools.gridrouter.utils.GridRouterRule.baseUrl;
+import static ru.qatools.gridrouter.utils.GridRouterRule.*;
 
 /**
  * TODO add test for user with different browsers and different versions
@@ -34,7 +30,7 @@ import static ru.qatools.gridrouter.utils.GridRouterRule.baseUrl;
 public class QuotaServletTest {
 
     @ClassRule
-    public static TestRule START_GRID_ROUTER = new GridRouterRule();
+    public static GridRouterRule gridRouter = new GridRouterRule();
 
     @Parameters(name = "{0}")
     public static Collection<Object[]> data() {
@@ -53,7 +49,7 @@ public class QuotaServletTest {
 
     @Test
     public void testQuota() throws IOException {
-        Map<String, Integer> quota = executeSimpleGet(baseUrl(user) + "/quota");
+        Map<String, Integer> quota = executeSimpleGet(gridRouter.baseUrl(user) + "/quota");
         assertThat(quota.size(), is(1));
         assertThat(quota.get("firefox:32.0"), is(browsersCount));
     }
