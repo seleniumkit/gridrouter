@@ -16,7 +16,6 @@ public class JettyRule implements TestRule {
     private final String classPath;
     private final String warPath;
     private final int port;
-
     private Server server;
 
     private Object[] beans;
@@ -67,5 +66,9 @@ public class JettyRule implements TestRule {
 
     protected void after() throws Exception {
         server.stop();
+    }
+
+    public int getPort() {
+        return port;
     }
 }

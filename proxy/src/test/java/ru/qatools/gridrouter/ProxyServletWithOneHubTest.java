@@ -3,7 +3,6 @@ package ru.qatools.gridrouter;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import ru.qatools.gridrouter.utils.GridRouterRule;
 import ru.qatools.gridrouter.utils.HubEmulatorRule;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,11 +15,9 @@ import static ru.qatools.gridrouter.utils.GridRouterRule.USER_1;
 public class ProxyServletWithOneHubTest extends ProxyServletTest {
 
     @Rule
-    public HubEmulatorRule hub = new HubEmulatorRule(GridRouterRule.HUB_PORT);
-
-    {
-        hub.emulate().newSessions(1);
-    }
+    public HubEmulatorRule hub = new HubEmulatorRule( 8081,
+            hub -> hub.emulate().newSessions(1)
+    );
 
     public ProxyServletWithOneHubTest() throws Exception {
         super(USER_1);
@@ -52,7 +49,7 @@ public class ProxyServletWithOneHubTest extends ProxyServletTest {
     public void testSessionIdDoesNotChange() {
         hub.emulate().navigation();
         super.testSessionIdDoesNotChange();
-        hub.verify().totalRequestsCountIs(3);
+        hub.verify().totalRequestsCountIs(4);
     }
 
     @Test
@@ -69,20 +66,20 @@ public class ProxyServletWithOneHubTest extends ProxyServletTest {
         hub.emulate().quit();
         super.testQuit();
         hub.verify().newSessionRequestsCountIs(1)
-                    .quitRequestsCountIs(1);
+                .quitRequestsCountIs(1);
     }
 
     @Override
     public void testSendRequestParams() {
         hub.emulate().navigation();
         super.testSendRequestParams();
-        hub.verify().totalRequestsCountIs(3);
+        hub.verify().totalRequestsCountIs(4);
     }
 
     @Override
     public void testFindElement() {
-        hub.emulate().findElement();
+        hub.emulate().navigation().findElement();
         super.testFindElement();
-        hub.verify().totalRequestsCountIs(2);
+        hub.verify().totalRequestsCountIs(3);
     }
 }

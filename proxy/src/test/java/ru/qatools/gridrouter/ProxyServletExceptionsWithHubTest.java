@@ -1,8 +1,7 @@
 package ru.qatools.gridrouter;
 
-import org.junit.AfterClass;
-import org.junit.ClassRule;
-import ru.qatools.gridrouter.utils.GridRouterRule;
+import org.junit.After;
+import org.junit.Rule;
 import ru.qatools.gridrouter.utils.HubEmulatorRule;
 
 /**
@@ -10,11 +9,11 @@ import ru.qatools.gridrouter.utils.HubEmulatorRule;
  */
 public class ProxyServletExceptionsWithHubTest extends ProxyServletExceptionsWithoutHubTest {
 
-    @ClassRule
-    public static HubEmulatorRule hub = new HubEmulatorRule(GridRouterRule.HUB_PORT);
+    @Rule
+    public HubEmulatorRule hub = new HubEmulatorRule( 8081);
 
-    @AfterClass
-    public static void tearDown() {
+    @After
+    public void tearDown() {
         hub.verify().totalRequestsCountIs(0);
     }
 }

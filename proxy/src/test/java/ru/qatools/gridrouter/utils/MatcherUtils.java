@@ -6,7 +6,6 @@ import org.hamcrest.TypeSafeMatcher;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import static ru.qatools.gridrouter.utils.GridRouterRule.baseUrl;
 import static ru.qatools.gridrouter.utils.GridRouterRule.hubUrl;
 
 /**
@@ -26,7 +25,7 @@ public final class MatcherUtils {
      *
      * @param browser capabilities for the browser to obtain
      */
-    public static Matcher<String> canObtain(final DesiredCapabilities browser) {
+    public static Matcher<String> canObtain(final GridRouterRule gridRouter, final DesiredCapabilities browser) {
         return new TypeSafeMatcher<String>() {
 
             private Exception exception;
@@ -34,7 +33,7 @@ public final class MatcherUtils {
             @Override
             protected boolean matchesSafely(String user) {
                 try {
-                    new RemoteWebDriver(hubUrl(baseUrl(user)), browser);
+                    new RemoteWebDriver(hubUrl(gridRouter.baseUrl(user)), browser);
                     return true;
                 } catch (Exception e) {
                     exception = e;

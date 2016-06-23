@@ -1,8 +1,7 @@
 package ru.qatools.gridrouter;
 
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
@@ -14,26 +13,22 @@ import ru.qatools.gridrouter.utils.GridRouterRule;
 import java.net.URL;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.*;
 import static org.openqa.selenium.Platform.ANY;
 import static org.openqa.selenium.remote.DesiredCapabilities.firefox;
-import static ru.qatools.gridrouter.utils.GridRouterRule.baseUrl;
 
 /**
  * @author Innokenty Shuvalov innokenty@yandex-team.ru
  */
 public abstract class ProxyServletTest {
 
-    @ClassRule
-    public static TestRule START_GRID_ROUTER = new GridRouterRule();
+    @Rule
+    public GridRouterRule gridRouter = new GridRouterRule();
 
     private final URL url;
 
     public ProxyServletTest(String user) {
-        url = GridRouterRule.hubUrl(baseUrl(user));
+        url = GridRouterRule.hubUrl(gridRouter.baseUrl(user));
     }
 
     protected final URL getUrl() {
@@ -51,6 +46,7 @@ public abstract class ProxyServletTest {
     public void testSessionIdDoesNotChange() {
         RemoteWebDriver driver = new RemoteWebDriver(getUrl(), firefox());
         String sessionId = driver.getSessionId().toString();
+        driver.getCurrentUrl();
         driver.get("some url");
         assertThat(driver.getSessionId().toString(), is(equalTo(sessionId)));
         driver.getCurrentUrl();
@@ -68,13 +64,15 @@ public abstract class ProxyServletTest {
 
     @Test
     public void testQuit() {
-        new RemoteWebDriver(getUrl(), firefox()).quit();
+        RemoteWebDriver driver = new RemoteWebDriver(getUrl(), firefox());
+        driver.quit();
     }
 
     @Test
     public void testSendRequestParams() {
         RemoteWebDriver driver = new RemoteWebDriver(getUrl(), firefox());
         String url = "some url";
+        driver.getCurrentUrl();
         driver.get(url);
         assertThat(driver.getCurrentUrl(), is(url));
     }
@@ -82,6 +80,7 @@ public abstract class ProxyServletTest {
     @Test
     public void testFindElement() {
         RemoteWebDriver driver = new RemoteWebDriver(getUrl(), firefox());
+        driver.getCurrentUrl();
         String selector = "//lol[foo='bar']";
         WebElement element = driver.findElement(By.xpath(selector));
         assertThat(

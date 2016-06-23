@@ -2,7 +2,6 @@ package ru.qatools.gridrouter;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import ru.qatools.gridrouter.sessions.BrowsersCountMap;
@@ -24,10 +23,10 @@ import static ru.qatools.gridrouter.utils.HttpUtils.executeSimpleGet;
 public class StatsServletTest {
 
     @Rule
-    public TestRule START_GRID_ROUTER = new GridRouterRule();
+    public GridRouterRule gridRouter = new GridRouterRule();
 
     @Rule
-    public HubEmulatorRule hub = new HubEmulatorRule(HUB_PORT);
+    public HubEmulatorRule hub = new HubEmulatorRule(8081);
 
     @Test
     public void testStats() throws IOException {
@@ -36,7 +35,7 @@ public class StatsServletTest {
         hub.emulate().newSessions(1);
         hub.emulate().quit();
 
-        WebDriver driver = new RemoteWebDriver(hubUrl(BASE_URL_WITH_AUTH), firefox());
+        WebDriver driver = new RemoteWebDriver(hubUrl(gridRouter.baseUrlWithAuth), firefox());
         assertThat(getActual(USER_1), is(newCountMap("firefox", "32.0")));
 
         driver.quit();
@@ -46,7 +45,7 @@ public class StatsServletTest {
     @Test
     public void testStatsForDifferentUsers() throws IOException {
         hub.emulate().newSessions(1);
-        new RemoteWebDriver(hubUrl(BASE_URL_WITH_AUTH), firefox());
+        new RemoteWebDriver(hubUrl(gridRouter.baseUrlWithAuth), firefox());
         assertThat(getActual(USER_1), is(newCountMap("firefox", "32.0")));
         assertThat(getActual(USER_2), is(empty()));
     }
@@ -54,7 +53,8 @@ public class StatsServletTest {
     @Test
     public void testEvictionOfOldSession() throws Exception {
         hub.emulate().newSessions(1);
-        new RemoteWebDriver(hubUrl(BASE_URL_WITH_AUTH), firefox());
+        new RemoteWebDriver(hubUrl(gridRouter.baseUrlWithAuth), firefox());
+        Thread.sleep(1000);
         assertThat(getActual(USER_1), is(newCountMap("firefox", "32.0")));
         Thread.sleep(6000);
         assertThat(getActual(USER_1), is(empty()));
@@ -63,16 +63,17 @@ public class StatsServletTest {
     @Test
     public void testActiveSessionIsNotEvicted() throws Exception {
         hub.emulate().newSessions(1).navigation();
-        WebDriver driver = new RemoteWebDriver(hubUrl(BASE_URL_WITH_AUTH), firefox());
+        WebDriver driver = new RemoteWebDriver(hubUrl(gridRouter.baseUrlWithAuth), firefox());
         for (int i = 0; i < 3; i++) {
             Thread.sleep(2000);
+            driver.getCurrentUrl();
             driver.get("http://yandex.ru");
         }
         assertThat(getActual(USER_1), is(newCountMap("firefox", "32.0")));
     }
 
     private BrowsersCountMap getActual(String user) throws IOException {
-        return executeSimpleGet(baseUrl(user) + "/stats", BrowsersCountMap.class);
+        return executeSimpleGet(gridRouter.baseUrl(user) + "/stats", BrowsersCountMap.class);
     }
 
     private BrowsersCountMap newCountMap(String browser, String version) {
