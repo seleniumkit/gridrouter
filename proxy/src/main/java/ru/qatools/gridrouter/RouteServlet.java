@@ -201,8 +201,8 @@ public class RouteServlet extends SpringHttpServlet {
                 }
             }
         } catch (AvailableBrowserCheckExeption e) {
-            LOGGER.error("[AVAILABLE_BROWSER_CHECK_ERROR] [{}] [{}] [{}] - {}",
-                    user, remoteHost, browser, e.getMessage());
+            LOGGER.error("[{}] [AVAILABLE_BROWSER_CHECK_ERROR] [{}] [{}] [{}] - {}",
+                    requestId, user, remoteHost, browser, e.getMessage());
         }
 
         LOGGER.error("[{}] [SESSION_NOT_CREATED] [{}] [{}] [{}]", requestId, user, remoteHost, browser);
