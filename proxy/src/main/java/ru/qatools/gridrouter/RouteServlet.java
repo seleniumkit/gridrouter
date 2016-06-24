@@ -37,6 +37,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.String.format;
@@ -80,30 +81,30 @@ public class RouteServlet extends SpringHttpServlet {
 
     private AtomicLong requestCounter = new AtomicLong();
 
-    private volatile boolean stop;
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
         JsonMessage message = JsonMessageFactory.from(request.getInputStream());
 
-        Future<Object> future = executor.submit(getRouteCallable(request, message, response));
         int routeTimeout = getRouteTimeout(request.getRemoteUser(), message);
+        AtomicBoolean terminated = new AtomicBoolean(false);
+        Future<Object> future = executor.submit(getRouteCallable(request, message, response, routeTimeout, terminated));
         executor.schedule((Runnable) () -> future.cancel(true), routeTimeout, TimeUnit.SECONDS);
         executor.shutdown();
         try {
             executor.awaitTermination(routeTimeout, TimeUnit.SECONDS);
-            stop = true;
+            terminated.set(true);
         } catch (InterruptedException e) {
             executor.shutdownNow();
         }
         replyWithError("Timed out when searching for valid host", response);
     }
 
-    private Callable<Object> getRouteCallable(HttpServletRequest request, JsonMessage message, HttpServletResponse response) {
+    private Callable<Object> getRouteCallable(HttpServletRequest request, JsonMessage message, HttpServletResponse response,
+                                              int routeTimeout, AtomicBoolean terminated) {
         return () -> {
-            route(request, message, response);
+            route(request, message, response, routeTimeout, terminated);
             return null;
         };
     }
@@ -123,7 +124,9 @@ public class RouteServlet extends SpringHttpServlet {
         return routeTimeout;
     }
 
-    private void route(HttpServletRequest request, JsonMessage message, HttpServletResponse response) throws IOException {
+    private void route(HttpServletRequest request, JsonMessage message,
+                       HttpServletResponse response,
+                       int routeTimeout, AtomicBoolean terminated) throws IOException {
 
         long requestId = requestCounter.getAndIncrement();
         long initialSeconds = Instant.now().getEpochSecond();
@@ -152,12 +155,12 @@ public class RouteServlet extends SpringHttpServlet {
 
         int attempt = 0;
         JsonMessage hubMessage = null;
-        try (CloseableHttpClient client = newHttpClient()) {
+        try (CloseableHttpClient client = newHttpClient(routeTimeout * 1000)) {
             if (actualVersion.getPermittedCount() != null) {
                 avblBrowsersChecker.ensureFreeBrowsersAvailable(user, remoteHost, browser, actualVersion);
             }
 
-            while (!allRegions.isEmpty() && !stop) {
+            while (!allRegions.isEmpty() && !terminated.get()) {
                 attempt++;
 
                 Region currentRegion = hostSelectionStrategy.selectRegion(allRegions, unvisitedRegions);
@@ -245,11 +248,12 @@ public class RouteServlet extends SpringHttpServlet {
         return method;
     }
 
-    protected CloseableHttpClient newHttpClient() {
+    protected CloseableHttpClient newHttpClient(int maxTimeout) {
         return HttpClientBuilder.create().setDefaultRequestConfig(
                 RequestConfig.custom()
                         .setConnectionRequestTimeout(10000)
                         .setConnectTimeout(10000)
+                        .setSocketTimeout(maxTimeout)
                         .build()
         ).setRedirectStrategy(new LaxRedirectStrategy()).disableAutomaticRetries().build();
     }
