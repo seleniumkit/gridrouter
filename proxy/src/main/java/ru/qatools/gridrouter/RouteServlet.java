@@ -183,7 +183,7 @@ public class RouteServlet extends SpringHttpServlet {
                     LOGGER.warn("[{}] [SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",
                             requestId, user, remoteHost, browser, route, hubMessage.getErrorMessage());
                 } catch (JsonProcessingException exception) {
-                    LOGGER.error("[{}] [BAD_HUB_JSON] [{}] [{}] [{}] - {}", "",
+                    LOGGER.error("[{}] [BAD_HUB_JSON] [{}] [{}] [{}] [{}] - {}", "",
                             requestId, user, remoteHost, browser, route, exception.getMessage());
                 } catch (IOException exception) {
                     LOGGER.error("[{}] [HUB_COMMUNICATION_FAILURE] [{}] [{}] [{}] - {}",
