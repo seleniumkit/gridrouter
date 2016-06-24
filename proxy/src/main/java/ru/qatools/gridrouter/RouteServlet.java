@@ -89,10 +89,11 @@ public class RouteServlet extends SpringHttpServlet {
         JsonMessage message = JsonMessageFactory.from(request.getInputStream());
 
         Future<Object> future = executor.submit(getRouteCallable(request, message, response));
+        int routeTimeout = getRouteTimeout(request.getRemoteUser(), message);
         executor.schedule((Runnable) () -> future.cancel(true), routeTimeout, TimeUnit.SECONDS);
         executor.shutdown();
         try {
-            executor.awaitTermination(getRouteTimeout(request.getRemoteUser(), message), TimeUnit.SECONDS);
+            executor.awaitTermination(routeTimeout, TimeUnit.SECONDS);
             stop = true;
         } catch (InterruptedException e) {
             executor.shutdownNow();
