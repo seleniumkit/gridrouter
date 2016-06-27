@@ -36,7 +36,10 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -87,10 +90,10 @@ public class RouteServlet extends SpringHttpServlet {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
         JsonMessage message = JsonMessageFactory.from(request.getInputStream());
 
+        long requestId = requestCounter.getAndIncrement();
         int routeTimeout = getRouteTimeout(request.getRemoteUser(), message);
         AtomicBoolean terminated = new AtomicBoolean(false);
-        Future<Object> future = executor.submit(getRouteCallable(request, message, response, routeTimeout, terminated));
-        executor.schedule((Runnable) () -> future.cancel(true), routeTimeout, TimeUnit.SECONDS);
+        executor.submit(getRouteCallable(request, message, response, requestId, routeTimeout, terminated));
         executor.shutdown();
         try {
             executor.awaitTermination(routeTimeout, TimeUnit.SECONDS);
@@ -102,9 +105,9 @@ public class RouteServlet extends SpringHttpServlet {
     }
 
     private Callable<Object> getRouteCallable(HttpServletRequest request, JsonMessage message, HttpServletResponse response,
-                                              int routeTimeout, AtomicBoolean terminated) {
+                                              long requestId, int routeTimeout, AtomicBoolean terminated) {
         return () -> {
-            route(request, message, response, routeTimeout, terminated);
+            route(request, message, response, requestId, routeTimeout, terminated);
             return null;
         };
     }
@@ -126,9 +129,9 @@ public class RouteServlet extends SpringHttpServlet {
 
     private void route(HttpServletRequest request, JsonMessage message,
                        HttpServletResponse response,
-                       int routeTimeout, AtomicBoolean terminated) throws IOException {
+                       long requestId, int routeTimeout, AtomicBoolean terminated) throws IOException {
 
-        long requestId = requestCounter.getAndIncrement();
+
         long initialSeconds = Instant.now().getEpochSecond();
 
         JsonCapabilities caps = message.getDesiredCapabilities();
