@@ -184,7 +184,7 @@ public class RouteServlet extends SpringHttpServlet {
                         long createdDurationSeconds = Instant.now().getEpochSecond() - initialSeconds;
                         LOGGER.info("[{}] [{}] [SESSION_CREATED] [{}] [{}] [{}] [{}] [{}] [{}]",
                                 requestId, createdDurationSeconds, user, remoteHost, browser, route, sessionId, attempt);
-                        statsCounter.startSession(hubMessage.getSessionId(), user, browser, actualVersion.getNumber(), route);
+                        statsCounter.startSession(hubMessage.getSessionId(), user, caps.getBrowserName(), actualVersion.getNumber(), route);
                         return;
                     }
                     LOGGER.warn("[{}] [SESSION_FAILED] [{}] [{}] [{}] [{}] - {}",
