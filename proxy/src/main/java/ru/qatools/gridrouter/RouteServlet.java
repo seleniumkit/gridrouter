@@ -117,9 +117,9 @@ public class RouteServlet extends SpringHttpServlet {
         try {
             if (caps.any().containsKey(ROUTE_TIMEOUT_CAPABILITY)) {
                 Integer desiredRouteTimeout = Integer.valueOf(String.valueOf(caps.any().get(ROUTE_TIMEOUT_CAPABILITY)));
-                if (desiredRouteTimeout > MAX_ROUTE_TIMEOUT_SECONDS) {
-                    return desiredRouteTimeout;
-                }
+                routeTimeout = (desiredRouteTimeout < MAX_ROUTE_TIMEOUT_SECONDS) ?
+                        desiredRouteTimeout :
+                        MAX_ROUTE_TIMEOUT_SECONDS;
                 LOGGER.warn("[{}] [INVALID_ROUTE_TIMEOUT] [{}]", user, desiredRouteTimeout);
             }
         } catch (NumberFormatException ignored) {
