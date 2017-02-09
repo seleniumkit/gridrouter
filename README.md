@@ -2,6 +2,9 @@
 
 **Selenium Grid Router** is a lightweight server that routes and proxies [Selenium Wedriver](http://www.seleniumhq.org/projects/webdriver/) requests to multiple Selenium hubs.
 
+## Golang Implementation
+There is a smaller and faster Golang implementation of this server. See https://github.com/aandryashin/ggr for more details.
+
 ## What is this for
 If you're frequently using Selenium for running your tests in browsers you may notice that a standard [Selenium Grid](https://github.com/SeleniumHQ/selenium/wiki/Grid2) installation has some faults that can prevent you from using it on large scale:
 * **Does not support high availability.** Selenium Grid consists of a single entry point **hub** server and multiple **node** processes. Users interact only with hub. That means that if for some reason hub goes down all nodes also become unavailable to user.
